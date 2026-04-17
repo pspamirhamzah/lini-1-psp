@@ -283,7 +283,6 @@
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         // Domain dummy yang digunakan di Supabase
-        // Ganti string ini jika Anda membuat email dengan akhiran yang berbeda
         const DUMMY_DOMAIN = "@lini1.psp";
 
         // State Login
@@ -292,10 +291,12 @@
         // =====================
         // UTILITIES GLOBAL
         // =====================
-        // Format angka dengan titik koma (;) sebagai ganti koma desimal, sesuai preferensi Anda.
+        // Format angka dengan 2 digit desimal dan menggunakan koma (,) sebagai pemisahnya
         const formatNumber = (n) => {
-            let formatted = new Intl.NumberFormat("id-ID").format(n || 0);
-            return formatted.replace(/,/g, ';'); 
+            return new Intl.NumberFormat("id-ID", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(n || 0);
         };
 
         const formatDate = (dateString) => {
@@ -325,7 +326,7 @@
             
             monthInput.addEventListener('change', loadData);
 
-            // Listener otomatis jika auth berubah (misal token habis atau logout di tab lain)
+            // Listener otomatis jika auth berubah
             supabaseClient.auth.onAuthStateChange((event, session) => {
                 isLoggedIn = !!session;
             });
@@ -346,7 +347,6 @@
                 return;
             }
 
-            // Gabungkan username dengan dummy domain
             const dummyEmail = usernameInput.toLowerCase() + DUMMY_DOMAIN;
 
             btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> <span>Memeriksa...</span>`;
@@ -362,7 +362,6 @@
             btn.disabled = false;
 
             if (error) {
-                // Pesan disesuaikan dengan konteks username
                 msg.textContent = "Username atau Password salah!";
                 msg.classList.remove('hidden');
             } else {
@@ -514,12 +513,17 @@
                 yesterdayData = todayIndex > 0 ? filledData[todayIndex - 1] : todayData;
             }
 
+            const calcPercent = (today, yesterday) => {
+                if (yesterday === 0) return today > 0 ? 100 : 0;
+                return Math.round(((today - yesterday) / yesterday) * 100);
+            };
+
             const kpiUrea = {
-                title: "UREA", value: todayData.UREA, diff: todayData.UREA - yesterdayData.UREA, lastUpdated: todayData.tanggal,
+                title: "UREA", value: todayData.UREA, diff: todayData.UREA - yesterdayData.UREA, diffPercent: calcPercent(todayData.UREA, yesterdayData.UREA), lastUpdated: todayData.tanggal,
                 breakdown: [ { n: "Subsidi", v: todayData["Urea Subsidi"] }, { n: "Non Subsidi", v: todayData["Urea Non Subsidi"] }, { n: "Curah", v: todayData["Urea Curah"] }]
             };
             const kpiNpk = {
-                title: "NPK", value: todayData.NPK, diff: todayData.NPK - yesterdayData.NPK, lastUpdated: todayData.tanggal,
+                title: "NPK", value: todayData.NPK, diff: todayData.NPK - yesterdayData.NPK, diffPercent: calcPercent(todayData.NPK, yesterdayData.NPK), lastUpdated: todayData.tanggal,
                 breakdown: [ { n: "Subsidi", v: todayData["NPK Subsidi"] }, { n: "Sawit", v: todayData["NPK Sawit"] }, { n: "Kopi", v: todayData["NPK Kopi"] }, { n: "Singkong", v: todayData["NPK Singkong"] }]
             };
 
@@ -535,7 +539,7 @@
             const isPositive = data.diff >= 0;
             const diffIcon = isPositive ? 'trending-up' : 'trending-down';
             const diffClass = isPositive ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400';
-            const diffValue = Math.abs(data.diff) === 0 ? "-" : formatNumber(Math.abs(data.diff));
+            const diffValue = Math.abs(data.diff) === 0 ? "-" : Math.abs(data.diffPercent) + "%";
 
             let breakdownHtml = data.breakdown.map(b => `
                 <div class="flex justify-between items-center group/item">
@@ -712,7 +716,7 @@
                     labels: ['UREA', 'NPK'],
                     datasets: [{
                         data: [urea, npk],
-                        backgroundColor: ['#facc15', '#3b82f6'], // kuning-urea, biru-npk
+                        backgroundColor: ['#facc15', '#3b82f6'],
                         borderWidth: 0,
                         hoverOffset: 5
                     }]
@@ -720,7 +724,7 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    cutout: '75%', // Ketebalan donat
+                    cutout: '75%',
                     plugins: {
                         legend: {
                             position: 'bottom',
@@ -737,9 +741,15 @@
                             callbacks: {
                                 label: function(context) {
                                     let value = context.raw;
-                                    let percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
-                                    // Mengganti titik menjadi koma (,) khusus untuk desimal persentase
-                                    return ` ${context.label}: ${formatNumber(value)} Ton (${percentage.replace('.', ',')}%)`;
+                                    let percentage = total > 0 ? (value / total) * 100 : 0;
+                                    
+                                    // Format angka persentase dengan 2 desimal
+                                    let percentageFormatted = new Intl.NumberFormat("id-ID", {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2
+                                    }).format(percentage);
+
+                                    return ` ${context.label}: ${formatNumber(value)} Ton (${percentageFormatted}%)`;
                                 }
                             }
                         }
@@ -760,7 +770,6 @@
                 return;
             }
 
-            // Daftar semua input produk (sesuai nama varian di tabel produk)
             const inputProduk = [
                 { id: 'stok-urea-subsidi', nama: 'Urea Subsidi' },
                 { id: 'stok-urea-non-subsidi', nama: 'Urea Non Subsidi' },
@@ -771,7 +780,6 @@
                 { id: 'stok-npk-singkong', nama: 'NPK Singkong' }
             ];
 
-            // Filter dan ambil nilai hanya pada kolom input yang diisi oleh admin
             const dataToSave = inputProduk
                 .map(item => ({ nama: item.nama, stok: document.getElementById(item.id).value, elementId: item.id }))
                 .filter(item => item.stok !== "");
@@ -787,7 +795,6 @@
             let successCount = 0;
             let errorMsg = "";
 
-            // Loop untuk menyimpan data satu per satu sesuai yang diisi
             for (const item of dataToSave) {
                 const { error } = await supabaseClient.rpc('input_stok_harian', {
                     p_tanggal: tanggal, p_nama_produk: item.nama, p_stok: parseFloat(item.stok)
@@ -808,7 +815,6 @@
                 showAdminMessage("Gagal menyimpan data: " + errorMsg, "error");
             } else {
                 showAdminMessage(`Berhasil menyimpan ${successCount} varian stok produk.`, "success");
-                // Kosongkan form yang baru saja diisi agar siap untuk input berikutnya
                 dataToSave.forEach(item => document.getElementById(item.elementId).value = ""); 
             }
         }
