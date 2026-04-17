@@ -25,7 +25,8 @@
         ::-webkit-scrollbar-thumb:hover { background: #4b5563; }
 
         /* Dark mode calendar icon */
-        ::-webkit-calendar-picker-indicator { filter: invert(1); opacity: 0.7; cursor: pointer; }
+        ::-webkit-calendar-picker-indicator { opacity: 0.6; cursor: pointer; transition: opacity 0.2s; }
+        ::-webkit-calendar-picker-indicator:hover { opacity: 1; }
     </style>
 </head>
 <body class="min-h-screen bg-[#131314] text-gray-100 pb-12 selection:bg-blue-500/30">
@@ -62,12 +63,11 @@
                 </div>
 
                 <!-- Filter Bulan (Hanya di Dashboard) -->
-                <div id="filter-container" class="flex items-center bg-[#1e1e20] border border-gray-700 rounded-xl px-3 py-1.5 shadow-sm hover:border-gray-500 transition-colors">
-                    <i data-lucide="calendar" class="w-4 h-4 text-gray-400 mr-2"></i>
+                <div id="filter-container" class="flex items-center bg-[#1e1e20] border border-gray-700 rounded-xl px-4 py-1.5 shadow-sm hover:border-gray-500 transition-colors">
                     <input
                         type="month"
                         id="monthFilter"
-                        class="bg-transparent border-none outline-none text-sm font-medium text-gray-200 cursor-pointer w-[120px]"
+                        class="bg-transparent border-none outline-none text-sm font-medium text-gray-200 cursor-pointer w-[130px]"
                         style="color-scheme: dark;"
                     />
                 </div>
@@ -164,43 +164,71 @@
         <!-- VIEW 3: ADMIN PANEL (Input Stok) -->
         <!-- ============================================== -->
         <div id="view-admin" class="hidden flex justify-center pb-12 pt-4">
-            <div class="w-full max-w-md">
+            <div class="w-full max-w-xl">
                 <div class="bg-[#1e1e20] rounded-[24px] p-8 border border-gray-800 shadow-xl relative overflow-hidden">
                     <div class="absolute -top-20 -right-20 w-40 h-40 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
                     <div class="text-center mb-6 relative z-10">
-                        <h2 class="text-xl font-bold text-white tracking-tight">Input Stok Harian</h2>
-                        <p class="text-sm text-gray-400 mt-1">Panel pembaruan data logistik Lini 1</p>
+                        <h2 class="text-xl font-bold text-white tracking-tight">Input Stok Massal</h2>
+                        <p class="text-sm text-gray-400 mt-1">Isi kolom stok yang ingin diperbarui untuk tanggal terpilih</p>
                     </div>
 
-                    <div class="space-y-5 relative z-10">
+                    <div class="space-y-6 relative z-10">
                         <div>
-                            <label class="block text-sm font-medium text-gray-400 mb-2">Tanggal</label>
+                            <label class="block text-sm font-medium text-gray-400 mb-2">Tanggal Pencatatan</label>
                             <input type="date" id="tanggal" class="w-full bg-[#131314] border border-gray-700 text-gray-200 rounded-xl px-4 py-3 outline-none focus:border-blue-500 focus:ring-1 transition-all">
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-400 mb-2">Kategori</label>
-                            <select id="kategori" onchange="loadProduk()" class="w-full bg-[#131314] border border-gray-700 text-gray-200 rounded-xl px-4 py-3 outline-none focus:border-blue-500 focus:ring-1 transition-all appearance-none cursor-pointer">
-                                <option value="">-- Pilih Kategori --</option>
-                                <option value="UREA">UREA</option>
-                                <option value="NPK">NPK</option>
-                            </select>
+                        
+                        <!-- Group UREA -->
+                        <div class="bg-[#131314] border border-gray-800 rounded-xl p-5 shadow-inner">
+                            <h3 class="text-xs font-semibold text-yellow-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                <i data-lucide="sprout" class="w-4 h-4"></i> Stok UREA (Ton)
+                            </h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-xs text-gray-400 mb-1.5">Subsidi</label>
+                                    <input type="number" step="any" id="stok-urea-subsidi" placeholder="0" class="w-full bg-[#1e1e20] border border-gray-700 text-gray-200 rounded-lg px-3 py-2 outline-none focus:border-yellow-500 focus:ring-1 transition-all text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-gray-400 mb-1.5">Non Subsidi</label>
+                                    <input type="number" step="any" id="stok-urea-non-subsidi" placeholder="0" class="w-full bg-[#1e1e20] border border-gray-700 text-gray-200 rounded-lg px-3 py-2 outline-none focus:border-yellow-500 focus:ring-1 transition-all text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-gray-400 mb-1.5">Curah</label>
+                                    <input type="number" step="any" id="stok-urea-curah" placeholder="0" class="w-full bg-[#1e1e20] border border-gray-700 text-gray-200 rounded-lg px-3 py-2 outline-none focus:border-yellow-500 focus:ring-1 transition-all text-sm">
+                                </div>
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-400 mb-2">Varian Produk</label>
-                            <select id="produk" disabled class="w-full bg-[#131314] border border-gray-700 text-gray-200 rounded-xl px-4 py-3 outline-none focus:border-blue-500 focus:ring-1 transition-all appearance-none disabled:opacity-50">
-                                <option value="">-- Menunggu Kategori --</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-400 mb-2">Jumlah Stok (Ton)</label>
-                            <input type="number" step="any" id="stok" placeholder="Misal: 5000" class="w-full bg-[#131314] border border-gray-700 text-gray-200 rounded-xl px-4 py-3 outline-none focus:border-blue-500 focus:ring-1 transition-all">
+
+                        <!-- Group NPK -->
+                        <div class="bg-[#131314] border border-gray-800 rounded-xl p-5 shadow-inner">
+                            <h3 class="text-xs font-semibold text-blue-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                <i data-lucide="flask-conical" class="w-4 h-4"></i> Stok NPK (Ton)
+                            </h3>
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                                <div>
+                                    <label class="block text-xs text-gray-400 mb-1.5">Subsidi</label>
+                                    <input type="number" step="any" id="stok-npk-subsidi" placeholder="0" class="w-full bg-[#1e1e20] border border-gray-700 text-gray-200 rounded-lg px-3 py-2 outline-none focus:border-blue-500 focus:ring-1 transition-all text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-gray-400 mb-1.5">Sawit</label>
+                                    <input type="number" step="any" id="stok-npk-sawit" placeholder="0" class="w-full bg-[#1e1e20] border border-gray-700 text-gray-200 rounded-lg px-3 py-2 outline-none focus:border-blue-500 focus:ring-1 transition-all text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-gray-400 mb-1.5">Kopi</label>
+                                    <input type="number" step="any" id="stok-npk-kopi" placeholder="0" class="w-full bg-[#1e1e20] border border-gray-700 text-gray-200 rounded-lg px-3 py-2 outline-none focus:border-blue-500 focus:ring-1 transition-all text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-gray-400 mb-1.5">Singkong</label>
+                                    <input type="number" step="any" id="stok-npk-singkong" placeholder="0" class="w-full bg-[#1e1e20] border border-gray-700 text-gray-200 rounded-lg px-3 py-2 outline-none focus:border-blue-500 focus:ring-1 transition-all text-sm">
+                                </div>
+                            </div>
                         </div>
 
                         <div id="message" class="hidden rounded-xl p-4 text-sm font-medium flex items-center gap-2 transition-all"></div>
 
                         <button onclick="simpanData()" id="btnSimpan" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3.5 rounded-xl transition-colors shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2 mt-2">
-                            <i data-lucide="save" class="w-5 h-5"></i><span>Simpan Data</span>
+                            <i data-lucide="save" class="w-5 h-5"></i><span>Simpan Semua Data</span>
                         </button>
                     </div>
                 </div>
@@ -225,7 +253,7 @@
 
         // Domain dummy yang digunakan di Supabase
         // Ganti string ini jika Anda membuat email dengan akhiran yang berbeda
-        const DUMMY_DOMAIN = "@pusri.id";
+        const DUMMY_DOMAIN = "@lini1.psp";
 
         // State Login
         let isLoggedIn = false;
@@ -622,63 +650,65 @@
         // =====================
         // FUNGSI ADMIN INPUT STOK
         // =====================
-        async function loadProduk() {
-            const kategori = document.getElementById('kategori').value;
-            const selectProduk = document.getElementById('produk');
-            
-            if (!kategori) {
-                selectProduk.innerHTML = "<option value=''>-- Menunggu Kategori --</option>";
-                selectProduk.disabled = true;
-                return;
-            }
-
-            selectProduk.innerHTML = "<option value=''>Memuat produk...</option>";
-            selectProduk.disabled = true;
-
-            const { data, error } = await supabaseClient.from('produk').select('nama_produk, kategori').eq('kategori', kategori).order('nama_produk');
-          
-            if (error) {
-                showAdminMessage("Gagal memuat produk: " + error.message, "error");
-                return;
-            }
-          
-            selectProduk.innerHTML = "<option value=''>-- Pilih Produk --</option>";
-            data.forEach(p => {
-                const option = document.createElement('option');
-                option.value = p.nama_produk;
-                option.textContent = p.nama_produk;
-                selectProduk.appendChild(option);
-            });
-            
-            selectProduk.disabled = false;
-        }
-
         async function simpanData() {
             const tanggal = document.getElementById('tanggal').value;
-            const produk = document.getElementById('produk').value;
-            const stok = document.getElementById('stok').value;
             const btn = document.getElementById('btnSimpan');
 
-            if (!tanggal || !produk || !stok) {
-                showAdminMessage("Semua kolom wajib diisi!", "error");
+            if (!tanggal) {
+                showAdminMessage("Tanggal wajib diisi!", "error");
+                return;
+            }
+
+            // Daftar semua input produk (sesuai nama varian di tabel produk)
+            const inputProduk = [
+                { id: 'stok-urea-subsidi', nama: 'Urea Subsidi' },
+                { id: 'stok-urea-non-subsidi', nama: 'Urea Non Subsidi' },
+                { id: 'stok-urea-curah', nama: 'Urea Curah' },
+                { id: 'stok-npk-subsidi', nama: 'NPK Subsidi' },
+                { id: 'stok-npk-sawit', nama: 'NPK Sawit' },
+                { id: 'stok-npk-kopi', nama: 'NPK Kopi' },
+                { id: 'stok-npk-singkong', nama: 'NPK Singkong' }
+            ];
+
+            // Filter dan ambil nilai hanya pada kolom input yang diisi oleh admin
+            const dataToSave = inputProduk
+                .map(item => ({ nama: item.nama, stok: document.getElementById(item.id).value, elementId: item.id }))
+                .filter(item => item.stok !== "");
+
+            if (dataToSave.length === 0) {
+                showAdminMessage("Minimal isi jumlah stok pada salah satu produk!", "error");
                 return;
             }
 
             btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Menyimpan...`;
             btn.disabled = true; btn.classList.add('opacity-70'); lucide.createIcons();
           
-            const { error } = await supabaseClient.rpc('input_stok_harian', {
-                p_tanggal: tanggal, p_nama_produk: produk, p_stok: parseFloat(stok)
-            });
+            let successCount = 0;
+            let errorMsg = "";
+
+            // Loop untuk menyimpan data satu per satu sesuai yang diisi
+            for (const item of dataToSave) {
+                const { error } = await supabaseClient.rpc('input_stok_harian', {
+                    p_tanggal: tanggal, p_nama_produk: item.nama, p_stok: parseFloat(item.stok)
+                });
+                
+                if (error) {
+                    errorMsg = error.message;
+                    break; 
+                } else {
+                    successCount++;
+                }
+            }
           
-            btn.innerHTML = `<i data-lucide="save" class="w-5 h-5"></i> <span>Simpan Data</span>`;
+            btn.innerHTML = `<i data-lucide="save" class="w-5 h-5"></i> <span>Simpan Semua Data</span>`;
             btn.disabled = false; btn.classList.remove('opacity-70'); lucide.createIcons();
 
-            if (error) {
-                showAdminMessage("Gagal menyimpan data: " + error.message, "error");
+            if (errorMsg) {
+                showAdminMessage("Gagal menyimpan data: " + errorMsg, "error");
             } else {
-                showAdminMessage(`Berhasil menyimpan ${formatNumber(stok)} Ton untuk ${produk}.`, "success");
-                document.getElementById('stok').value = ""; 
+                showAdminMessage(`Berhasil menyimpan ${successCount} varian stok produk.`, "success");
+                // Kosongkan form yang baru saja diisi agar siap untuk input berikutnya
+                dataToSave.forEach(item => document.getElementById(item.elementId).value = ""); 
             }
         }
 
