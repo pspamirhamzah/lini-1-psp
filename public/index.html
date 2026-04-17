@@ -111,7 +111,6 @@
                                 <i data-lucide="line-chart" class="w-5 h-5 text-blue-400"></i>
                                 <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wide">Tren Stok Harian</h3>
                             </div>
-                            <span id="chartMonth" class="text-xs text-gray-500 font-medium bg-[#131314] px-2 py-1 rounded-md border border-gray-800 uppercase tracking-wider"></span>
                         </div>
                         <div class="h-[320px] w-full relative">
                             <canvas id="mainChart"></canvas>
@@ -122,9 +121,9 @@
                     <div class="lg:col-span-1 bg-[#1e1e20] rounded-[24px] p-6 border border-gray-800 shadow-xl flex flex-col">
                         <div class="flex items-center justify-between mb-6">
                             <div class="flex items-center gap-2">
+                                <i data-lucide="pie-chart" class="w-5 h-5 text-blue-400"></i>
                                 <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wide">Komposisi Hari Ini</h3>
                             </div>
-                            <span id="donutDate" class="text-xs text-gray-500 font-medium bg-[#131314] px-2 py-1 rounded-md border border-gray-800"></span>
                         </div>
                         <div class="flex-grow flex items-center justify-center relative min-h-[250px]">
                             <canvas id="donutChart"></canvas>
@@ -146,7 +145,7 @@
 
         <!-- VIEW 2: LOGIN ADMIN -->
         <div id="view-login" class="hidden flex justify-center pb-12 pt-8">
-            <div class="w-full max-w-sm">
+            <div class="w-full max-sm">
                 <div class="text-center mb-8">
                     <h2 class="text-2xl font-bold text-white tracking-tight">Login Admin</h2>
                     <p class="text-sm text-gray-400 mt-1">Otentikasi akses ke sistem</p>
@@ -406,7 +405,6 @@
         async function loadData() {
             const selectedMonth = monthInput.value;
             toggleLoading(true);
-            document.getElementById('chartMonth').innerText = formatMonthOnly(selectedMonth);
             try {
                 const response = await fetch(`${SUPABASE_URL}/rest/v1/v_stok_harian?select=*`, {
                     headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
@@ -539,7 +537,6 @@
                                 <div class="text-3xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white tracking-tight leading-none">${formatNumber(data.value)}</div>
                                 <div class="text-[10px] sm:text-xs md:text-lg font-medium text-gray-500">Ton</div>
                             </div>
-                            <!-- Perubahan: Border dihapus pada elemen persentase -->
                             <div class="flex items-center gap-1 text-[9px] sm:text-xs md:text-sm font-medium px-1.5 py-0.5 sm:px-2.5 sm:py-1 rounded-full mb-0.5 ${diffClass} whitespace-nowrap shrink-0">
                                 <i data-lucide="${diffIcon}" class="w-3 h-3 sm:w-4 h-4"></i> ${displayPercent}
                             </div>
@@ -726,7 +723,6 @@
             const ctx = document.getElementById('donutChart').getContext('2d');
             const latestData = latestDate ? filledData.find(d => d.tanggal === latestDate) : { UREA: 0, NPK: 0 };
             const urea = latestData.UREA; const npk = latestData.NPK; const total = urea + npk;
-            document.getElementById('donutDate').innerText = latestDate ? formatDate(latestDate) : '';
             document.getElementById('donutTotal').innerText = formatNumber(total);
             if (donutChartInstance) donutChartInstance.destroy();
             donutChartInstance = new Chart(ctx, {
