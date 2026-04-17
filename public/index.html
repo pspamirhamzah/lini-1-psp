@@ -722,15 +722,15 @@
             const ctx = document.getElementById('mainChart').getContext('2d');
             const labels = filledData.map(d => d.tanggal.slice(-2));
             
-            // Definisi palet warna baru sesuai permintaan
+            // Konfigurasi palet warna
             const colors = {
-                'UREA': '#facc15', // Total Urea (Kuning)
-                'NPK': '#3b82f6',  // Total NPK (Biru)
+                'UREA': '#facc15',
+                'NPK': '#3b82f6',
                 'Urea Subsidi': '#f472b6',      // Pink
-                'Urea Non Subsidi': '#fbbf24',  // Kuning
+                'Urea Non Subsidi': '#ffff00',  // Kuning Lebih Terang (Vivid Yellow)
                 'Urea Curah': '#f8fafc',        // Putih
-                'NPK Subsidi': '#3b82f6',       // Biru (Tetap)
-                'NPK Sawit': '#38bdf8',         // Biru Langit (Sky Blue - Berbeda dengan Subsidi)
+                'NPK Subsidi': '#1d4ed8',       // Biru Tua
+                'NPK Sawit': '#38bdf8',         // Biru Langit
                 'NPK Singkong': '#f87171',      // Merah
                 'NPK Kopi': '#4ade80'           // Hijau
             };
@@ -768,7 +768,17 @@
                     datasets: datasets
                 },
                 options: {
-                    responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    layout: {
+                        padding: {
+                            top: 10,
+                            bottom: 5,
+                            left: 5,
+                            right: 5
+                        }
+                    },
+                    interaction: { mode: 'index', intersect: false },
                     plugins: {
                         legend: { 
                             display: true,
@@ -812,11 +822,28 @@
                         }
                     },
                     scales: {
-                        x: { grid: { display: false }, ticks: { color: '#9ca3af', font: { family: 'Inter', size: 11 }, maxTicksLimit: 12, maxRotation: 0 }, border: { display: false } },
+                        x: { 
+                            grid: { 
+                                display: false
+                            }, 
+                            ticks: { 
+                                color: '#52525b', 
+                                font: { family: 'Inter', size: 11 }, 
+                                maxTicksLimit: 12, 
+                                maxRotation: 0 
+                            }, 
+                            border: { display: false } 
+                        },
                         y: { 
-                            grid: { color: '#27272a', drawBorder: false, borderDash: [4, 4] }, 
+                            grid: { 
+                                color: 'rgba(39, 39, 42, 0.4)',
+                                drawBorder: false, 
+                            }, 
                             border: { display: false }, 
-                            ticks: { display: false }
+                            ticks: { 
+                                display: false,
+                                maxTicksLimit: 5
+                            }
                         }
                     }
                 }
