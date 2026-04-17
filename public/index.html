@@ -38,6 +38,12 @@
         /* Dark mode calendar icon */
         ::-webkit-calendar-picker-indicator { opacity: 0.6; cursor: pointer; transition: opacity 0.2s; }
         ::-webkit-calendar-picker-indicator:hover { opacity: 1; }
+
+        /* Custom Checkbox Style */
+        .custom-checkbox:checked {
+            background-color: #3b82f6;
+            border-color: #3b82f6;
+        }
     </style>
 </head>
 <body class="min-h-screen bg-[#131314] text-gray-100 pb-12 selection:bg-blue-500/30">
@@ -106,10 +112,68 @@
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <!-- TREN STOK HARIAN -->
                     <div class="lg:col-span-2 bg-[#1e1e20] rounded-[24px] p-6 border border-gray-800 shadow-xl">
-                        <div class="flex items-center justify-between mb-6">
-                            <div class="flex items-center gap-2">
-                                <i data-lucide="line-chart" class="w-5 h-5 text-blue-400"></i>
-                                <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wide">Tren Stok Harian</h3>
+                        <div class="flex flex-row items-center justify-between gap-2 mb-6">
+                            <div class="flex items-center gap-2 overflow-hidden">
+                                <i data-lucide="line-chart" class="w-5 h-5 text-blue-400 shrink-0"></i>
+                                <h3 class="text-xs sm:text-sm font-semibold text-gray-400 uppercase tracking-wide truncate">Tren Stok Harian</h3>
+                            </div>
+                            
+                            <!-- Filter Produk di Grafik (Seragam dengan Filter Bulan) -->
+                            <div class="relative shrink-0">
+                                <button id="btnFilterChart" class="flex items-center gap-1.5 bg-[#1e1e20] border border-gray-700 rounded-xl px-3 py-1.5 shadow-sm hover:border-gray-500 transition-colors text-[10px] sm:text-xs font-medium text-gray-300">
+                                    <i data-lucide="filter" class="w-3.5 h-3.5 text-gray-400"></i>
+                                    <span>Produk</span>
+                                    <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-gray-500"></i>
+                                </button>
+                                
+                                <!-- Dropdown Filter -->
+                                <div id="dropdownFilterChart" class="hidden absolute right-0 mt-2 w-56 bg-[#1e1e20] border border-gray-700 rounded-xl shadow-2xl z-[60] p-3 animate-in fade-in slide-in-from-top-2 duration-200">
+                                    <div class="space-y-2 max-h-[300px] overflow-y-auto pr-1">
+                                        <div class="text-[10px] font-bold text-gray-500 uppercase tracking-wider px-1 mb-1">Kategori Utama</div>
+                                        <label class="flex items-center gap-2 p-1.5 hover:bg-white/5 rounded-md cursor-pointer transition-colors">
+                                            <input type="checkbox" value="UREA" checked class="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500 focus:ring-0 chart-filter-checkbox">
+                                            <span class="text-xs text-gray-300">Total UREA</span>
+                                        </label>
+                                        <label class="flex items-center gap-2 p-1.5 hover:bg-white/5 rounded-md cursor-pointer transition-colors">
+                                            <input type="checkbox" value="NPK" checked class="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500 focus:ring-0 chart-filter-checkbox">
+                                            <span class="text-xs text-gray-300">Total NPK</span>
+                                        </label>
+                                        
+                                        <div class="text-[10px] font-bold text-gray-500 uppercase tracking-wider px-1 mt-3 mb-1">Produk Spesifik</div>
+                                        <label class="flex items-center gap-2 p-1.5 hover:bg-white/5 rounded-md cursor-pointer transition-colors">
+                                            <input type="checkbox" value="Urea Subsidi" class="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500 focus:ring-0 chart-filter-checkbox">
+                                            <span class="text-xs text-gray-300">Urea Subsidi</span>
+                                        </label>
+                                        <label class="flex items-center gap-2 p-1.5 hover:bg-white/5 rounded-md cursor-pointer transition-colors">
+                                            <input type="checkbox" value="Urea Non Subsidi" class="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500 focus:ring-0 chart-filter-checkbox">
+                                            <span class="text-xs text-gray-300">Urea Non Subsidi</span>
+                                        </label>
+                                        <label class="flex items-center gap-2 p-1.5 hover:bg-white/5 rounded-md cursor-pointer transition-colors">
+                                            <input type="checkbox" value="Urea Curah" class="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500 focus:ring-0 chart-filter-checkbox">
+                                            <span class="text-xs text-gray-300">Urea Curah</span>
+                                        </label>
+                                        <label class="flex items-center gap-2 p-1.5 hover:bg-white/5 rounded-md cursor-pointer transition-colors">
+                                            <input type="checkbox" value="NPK Subsidi" class="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500 focus:ring-0 chart-filter-checkbox">
+                                            <span class="text-xs text-gray-300">NPK Subsidi</span>
+                                        </label>
+                                        <label class="flex items-center gap-2 p-1.5 hover:bg-white/5 rounded-md cursor-pointer transition-colors">
+                                            <input type="checkbox" value="NPK Sawit" class="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500 focus:ring-0 chart-filter-checkbox">
+                                            <span class="text-xs text-gray-300">NPK Sawit</span>
+                                        </label>
+                                        <label class="flex items-center gap-2 p-1.5 hover:bg-white/5 rounded-md cursor-pointer transition-colors">
+                                            <input type="checkbox" value="NPK Singkong" class="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500 focus:ring-0 chart-filter-checkbox">
+                                            <span class="text-xs text-gray-300">NPK Singkong</span>
+                                        </label>
+                                        <label class="flex items-center gap-2 p-1.5 hover:bg-white/5 rounded-md cursor-pointer transition-colors">
+                                            <input type="checkbox" value="NPK Kopi" class="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500 focus:ring-0 chart-filter-checkbox">
+                                            <span class="text-xs text-gray-300">NPK Kopi</span>
+                                        </label>
+                                    </div>
+                                    <div class="mt-3 pt-2 border-t border-gray-800 flex justify-between">
+                                        <button onclick="resetChartFilters()" class="text-[10px] text-gray-500 hover:text-white transition-colors uppercase font-bold">Reset</button>
+                                        <button onclick="toggleFilterDropdown()" class="text-[10px] bg-blue-600/20 text-blue-400 px-2 py-1 rounded hover:bg-blue-600/30 transition-colors font-semibold uppercase tracking-wider">Tutup</button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="h-[320px] w-full relative">
@@ -272,12 +336,12 @@
 
         const DUMMY_DOMAIN = "@lini1.psp";
         let isLoggedIn = false;
+        let globalCurrentData = []; // Menyimpan data bulan aktif untuk filter grafik
 
         // =====================
         // UTILITIES GLOBAL
         // =====================
         const formatNumber = (n) => {
-            // Menggunakan locale id-ID yang secara default menggunakan koma (,) sebagai pemisah desimal
             return new Intl.NumberFormat("id-ID", {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2
@@ -288,14 +352,6 @@
             if (!dateString) return "";
             const options = { day: "numeric", month: "short", year: "numeric" };
             return new Date(dateString).toLocaleDateString("id-ID", options);
-        };
-
-        const formatMonthOnly = (monthString) => {
-            if (!monthString) return "";
-            const [year, month] = monthString.split("-");
-            const date = new Date(year, month - 1);
-            const m = date.toLocaleDateString("id-ID", { month: "short" }).toUpperCase().substring(0, 3);
-            return `${m} ${year}`;
         };
 
         let chartInstance = null;
@@ -309,11 +365,45 @@
             const { data: { session } } = await supabaseClient.auth.getSession();
             isLoggedIn = !!session;
             switchView('dashboard');
+            
             monthInput.addEventListener('change', loadData);
+            
+            // Event listener untuk filter grafik
+            document.getElementById('btnFilterChart').addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleFilterDropdown();
+            });
+
+            document.addEventListener('click', () => {
+                document.getElementById('dropdownFilterChart').classList.add('hidden');
+            });
+
+            document.getElementById('dropdownFilterChart').addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+
+            document.querySelectorAll('.chart-filter-checkbox').forEach(cb => {
+                cb.addEventListener('change', () => {
+                    renderChart(globalCurrentData);
+                });
+            });
+
             supabaseClient.auth.onAuthStateChange((event, session) => {
                 isLoggedIn = !!session;
             });
         });
+
+        function toggleFilterDropdown() {
+            const dropdown = document.getElementById('dropdownFilterChart');
+            dropdown.classList.toggle('hidden');
+        }
+
+        function resetChartFilters() {
+            document.querySelectorAll('.chart-filter-checkbox').forEach(cb => {
+                cb.checked = (cb.value === 'UREA' || cb.value === 'NPK');
+            });
+            renderChart(globalCurrentData);
+        }
 
         async function prosesLogin() {
             const usernameInput = document.getElementById('login-username').value.trim();
@@ -402,18 +492,30 @@
             return days;
         }
 
+        /**
+         * FUNGSI LOAD DATA TEROPTIMASI
+         */
         async function loadData() {
             const selectedMonth = monthInput.value;
             toggleLoading(true);
+            
             try {
-                const response = await fetch(`${SUPABASE_URL}/rest/v1/v_stok_harian?select=*`, {
-                    headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
-                });
-                if (!response.ok) throw new Error("Gagal mengambil data");
-                const rawData = await response.json();
-                const raw = (rawData || []).filter((r) => r.tanggal?.startsWith(selectedMonth));
+                const startDate = `${selectedMonth}-01`;
+                const dateParts = selectedMonth.split("-");
+                const nextMonth = new Date(dateParts[0], dateParts[1], 1);
+                const lastDay = new Date(nextMonth - 1).getDate();
+                const endDate = `${selectedMonth}-${String(lastDay).padStart(2, '0')}`;
+
+                const { data: raw, error } = await supabaseClient
+                    .from('v_stok_harian')
+                    .select('*')
+                    .gte('tanggal', startDate)
+                    .lte('tanggal', endDate);
+
+                if (error) throw error;
+
                 const grouped = {};
-                raw.forEach((r) => {
+                (raw || []).forEach((r) => {
                     if (!grouped[r.tanggal]) {
                         grouped[r.tanggal] = {
                             tanggal: r.tanggal, UREA: 0, NPK: 0,
@@ -424,13 +526,16 @@
                     grouped[r.tanggal][r.kategori] += r.stok;
                     grouped[r.tanggal][r.nama_produk] += r.stok;
                 });
+
                 const days = generateDays(selectedMonth);
                 const entryDates = Object.keys(grouped).sort();
                 const latestEntryDate = entryDates.length > 0 ? entryDates[entryDates.length - 1] : null;
+                
                 let lastKnownData = {
                     UREA: 0, NPK: 0, "Urea Subsidi": 0, "Urea Non Subsidi": 0, "Urea Curah": 0,
                     "NPK Subsidi": 0, "NPK Sawit": 0, "NPK Kopi": 0, "NPK Singkong": 0,
                 };
+
                 const filled = days.map(d => {
                     if (grouped[d]) {
                         lastKnownData = { ...grouped[d] };
@@ -446,12 +551,17 @@
                         }
                     }
                 });
+
+                globalCurrentData = filled; // Simpan untuk filter grafik
                 processKPIs(filled, latestEntryDate);
                 processRankings(filled, latestEntryDate);
                 renderChart(filled);
                 renderDonutChart(filled, latestEntryDate);
                 toggleLoading(false);
-            } catch (err) { console.error(err); toggleLoading(false); }
+            } catch (err) { 
+                console.error("Fetch Error:", err); 
+                toggleLoading(false); 
+            }
         }
 
         function toggleLoading(isLoading) {
@@ -615,57 +725,53 @@
         function renderChart(filledData) {
             const ctx = document.getElementById('mainChart').getContext('2d');
             const labels = filledData.map(d => d.tanggal.slice(-2));
-            const ureaData = filledData.map(d => d.UREA);
-            const npkData = filledData.map(d => d.NPK);
             
-            const ureaColor = '#facc15';
-            const npkColor = '#3b82f6';
+            // Definisikan palet warna
+            const colors = {
+                'UREA': '#facc15',
+                'NPK': '#3b82f6',
+                'Urea Subsidi': '#eab308',
+                'Urea Non Subsidi': '#fbbf24',
+                'Urea Curah': '#fef08a',
+                'NPK Subsidi': '#2563eb',
+                'NPK Sawit': '#60a5fa',
+                'NPK Singkong': '#93c5fd',
+                'NPK Kopi': '#bfdbfe'
+            };
 
-            let gradientUrea = ctx.createLinearGradient(0, 0, 0, 320);
-            gradientUrea.addColorStop(0, 'rgba(250, 204, 21, 0.4)'); 
-            gradientUrea.addColorStop(1, 'rgba(250, 204, 21, 0.0)');
+            // Ambil pilihan filter dari UI
+            const selectedFilters = Array.from(document.querySelectorAll('.chart-filter-checkbox:checked')).map(cb => cb.value);
             
-            let gradientNpk = ctx.createLinearGradient(0, 0, 0, 320);
-            gradientNpk.addColorStop(0, 'rgba(59, 130, 246, 0.4)'); 
-            gradientNpk.addColorStop(1, 'rgba(59, 130, 246, 0.0)');
+            // Bangun datasets berdasarkan filter
+            const datasets = selectedFilters.map(key => {
+                const color = colors[key] || '#9ca3af';
+                let gradient = ctx.createLinearGradient(0, 0, 0, 320);
+                gradient.addColorStop(0, `${color}40`); 
+                gradient.addColorStop(1, `${color}00`); 
+
+                return {
+                    label: key,
+                    data: filledData.map(d => d[key] || 0),
+                    borderColor: color,
+                    backgroundColor: gradient,
+                    borderWidth: 2.5,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 0,
+                    pointHoverRadius: 6,
+                    pointBackgroundColor: '#1e1e20',
+                    pointBorderColor: color,
+                    pointBorderWidth: 2,
+                    pointStyle: 'rect'
+                };
+            });
 
             if (chartInstance) chartInstance.destroy();
             chartInstance = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: labels,
-                    datasets: [
-                        { 
-                            label: 'UREA', 
-                            data: ureaData, 
-                            borderColor: ureaColor, 
-                            backgroundColor: gradientUrea, 
-                            borderWidth: 3, 
-                            fill: true, 
-                            tension: 0.4, 
-                            pointRadius: 0, 
-                            pointHoverRadius: 6, 
-                            pointBackgroundColor: '#1e1e20', 
-                            pointBorderColor: ureaColor, 
-                            pointBorderWidth: 2,
-                            pointStyle: 'rect' 
-                        },
-                        { 
-                            label: 'NPK', 
-                            data: npkData, 
-                            borderColor: npkColor, 
-                            backgroundColor: gradientNpk, 
-                            borderWidth: 3, 
-                            fill: true, 
-                            tension: 0.4, 
-                            pointRadius: 0, 
-                            pointHoverRadius: 6, 
-                            pointBackgroundColor: '#1e1e20', 
-                            pointBorderColor: npkColor, 
-                            pointBorderWidth: 2,
-                            pointStyle: 'rect'
-                        }
-                    ]
+                    datasets: datasets
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
@@ -675,12 +781,12 @@
                             position: 'bottom',
                             labels: { 
                                 color: '#9ca3af', 
-                                font: { family: 'Inter', size: 12, weight: '500' }, 
-                                padding: 20, 
+                                font: { family: 'Inter', size: 10, weight: '500' }, 
+                                padding: 15, 
                                 usePointStyle: true, 
                                 pointStyle: 'rect',
-                                boxWidth: 10,
-                                boxHeight: 10,
+                                boxWidth: 8,
+                                boxHeight: 8,
                                 generateLabels: (chart) => {
                                     const labels = Chart.defaults.plugins.legend.labels.generateLabels(chart);
                                     labels.forEach(label => {
@@ -694,7 +800,7 @@
                         tooltip: {
                             backgroundColor: '#1e1e20', titleColor: '#9ca3af', bodyColor: '#f3f4f6', borderColor: '#374151', borderWidth: 1, padding: 12, boxPadding: 6, 
                             usePointStyle: true, 
-                            titleFont: { family: 'Inter', size: 12, weight: '600' }, bodyFont: { family: 'Inter', size: 14, weight: 'bold' },
+                            titleFont: { family: 'Inter', size: 11, weight: '600' }, bodyFont: { family: 'Inter', size: 13, weight: 'bold' },
                             callbacks: { 
                                 title: function(context) { return formatDate(filledData[context[0].dataIndex].tanggal); }, 
                                 label: function(context) { 
@@ -712,8 +818,8 @@
                         }
                     },
                     scales: {
-                        x: { grid: { display: false }, ticks: { color: '#9ca3af', font: { family: 'Inter', size: 12 }, maxTicksLimit: 10, maxRotation: 0 }, border: { display: false } },
-                        y: { grid: { color: '#27272a', drawBorder: false, borderDash: [4, 4] }, border: { display: false }, ticks: { display: false, maxTicksLimit: 5 } }
+                        x: { grid: { display: false }, ticks: { color: '#9ca3af', font: { family: 'Inter', size: 11 }, maxTicksLimit: 12, maxRotation: 0 }, border: { display: false } },
+                        y: { grid: { color: '#27272a', drawBorder: false, borderDash: [4, 4] }, border: { display: false }, ticks: { color: '#52525b', font: { family: 'Inter', size: 10 }, maxTicksLimit: 5, callback: (v) => formatNumber(v) } }
                     }
                 }
             });
@@ -801,6 +907,7 @@
             if (errorMsg) { showAdminMessage("Gagal menyimpan data: " + errorMsg, "error"); } else {
                 showAdminMessage(`Berhasil menyimpan ${successCount} varian stok produk.`, "success");
                 dataToSave.forEach(item => document.getElementById(item.elementId).value = ""); 
+                loadData(); 
             }
         }
 
