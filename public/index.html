@@ -32,7 +32,7 @@
         /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #374151; border-radius: 4px; }
+        ::-webkit-scrollbar { background: #374151; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #4b5563; }
 
         /* Dark mode calendar icon */
@@ -579,21 +579,31 @@
             const yesterdayData = idx > 0 ? filledData[idx - 1] : todayData;
             
             const calcPercent = (today, yesterday) => {
-                if (yesterday === 0) return today > 0 ? 100 : 0;
+                if (!yesterday || yesterday === 0) return today > 0 ? 100 : 0;
                 return ((today - yesterday) / yesterday) * 100;
             };
             
             const kpiUrea = {
-                title: "UREA", value: todayData.UREA, diffPercent: calcPercent(todayData.UREA, yesterdayData.UREA), lastUpdated: todayData.tanggal,
-                breakdown: [ { n: "Subsidi", v: todayData["Urea Subsidi"] }, { n: "Non Subsidi", v: todayData["Urea Non Subsidi"] }, { n: "Curah", v: todayData["Urea Curah"] }]
+                title: "UREA", 
+                value: todayData.UREA, 
+                diffPercent: calcPercent(todayData.UREA, yesterdayData.UREA), 
+                lastUpdated: todayData.tanggal,
+                breakdown: [ 
+                    { n: "Subsidi", v: todayData["Urea Subsidi"], d: calcPercent(todayData["Urea Subsidi"], yesterdayData["Urea Subsidi"]) }, 
+                    { n: "Non Subsidi", v: todayData["Urea Non Subsidi"], d: calcPercent(todayData["Urea Non Subsidi"], yesterdayData["Urea Non Subsidi"]) }, 
+                    { n: "Curah", v: todayData["Urea Curah"], d: calcPercent(todayData["Urea Curah"], yesterdayData["Urea Curah"]) }
+                ]
             };
             const kpiNpk = {
-                title: "NPK", value: todayData.NPK, diffPercent: calcPercent(todayData.NPK, yesterdayData.NPK), lastUpdated: todayData.tanggal,
+                title: "NPK", 
+                value: todayData.NPK, 
+                diffPercent: calcPercent(todayData.NPK, yesterdayData.NPK), 
+                lastUpdated: todayData.tanggal,
                 breakdown: [ 
-                    { n: "Subsidi", v: todayData["NPK Subsidi"] }, 
-                    { n: "Sawit", v: todayData["NPK Sawit"] }, 
-                    { n: "Singkong", v: todayData["NPK Singkong"] },
-                    { n: "Kopi", v: todayData["NPK Kopi"] }
+                    { n: "Subsidi", v: todayData["NPK Subsidi"], d: calcPercent(todayData["NPK Subsidi"], yesterdayData["NPK Subsidi"]) }, 
+                    { n: "Sawit", v: todayData["NPK Sawit"], d: calcPercent(todayData["NPK Sawit"], yesterdayData["NPK Sawit"]) }, 
+                    { n: "Singkong", v: todayData["NPK Singkong"], d: calcPercent(todayData["NPK Singkong"], yesterdayData["NPK Singkong"]) },
+                    { n: "Kopi", v: todayData["NPK Kopi"], d: calcPercent(todayData["NPK Kopi"], yesterdayData["NPK Kopi"]) }
                 ]
             };
             document.getElementById('kpi-urea').innerHTML = renderKpiCard(kpiUrea, true);
@@ -610,20 +620,45 @@
             const diffIcon = isPositive ? 'trending-up' : 'trending-down';
             const diffClass = isPositive ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400';
             
-            const displayPercent = new Intl.NumberFormat("id-ID", {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            }).format(Math.abs(diffValue)) + "%";
+            const formatPct = (val) => {
+                return new Intl.NumberFormat("id-ID", {
+                    minimumFractionDigits: 1,
+                    maximumFractionDigits: 1
+                }).format(Math.abs(val)) + "%";
+            };
 
-            let breakdownHtml = (data.breakdown || []).map(b => `
-                <div class="flex justify-between items-center group/item py-0.5">
-                    <span class="text-xs sm:text-sm text-gray-400 flex items-center gap-2">
+            const displayPercent = formatPct(diffValue);
+
+            let breakdownHtml = (data.breakdown || []).map(b => {
+                let bColor = "text-white";
+                if (b.d > 0) bColor = "text-emerald-400";
+                else if (b.d < 0) bColor = "text-red-400";
+                
+                const bIcon = b.d >= 0 ? 'trending-up' : 'trending-down';
+                const opacityIcon = b.d === 0 ? 'opacity-0' : 'opacity-100';
+                
+                return `
+                <div class="flex justify-between items-center group/item py-1">
+                    <div class="flex items-center gap-2 overflow-hidden flex-1">
                         <span class="w-1.5 h-1.5 rounded-full ${isUrea ? 'bg-yellow-400' : 'bg-blue-400'} opacity-40 group-hover/item:opacity-100 transition-opacity shrink-0"></span>
-                        <span class="truncate font-medium">${b.n}</span>
-                    </span>
-                    <span class="text-xs sm:text-sm font-semibold text-gray-200 shrink-0">${formatNumber(b.v)} <span class="text-[10px] sm:text-xs text-gray-500 font-normal">Ton</span></span>
+                        <span class="truncate text-xs sm:text-sm text-gray-400 font-medium">${b.n}</span>
+                    </div>
+                    <!-- Kontainer nilai dan persentase yang lebih rapat -->
+                    <div class="flex items-center gap-2 sm:gap-2.5 shrink-0">
+                        <!-- Nilai Stok -->
+                        <span class="text-xs sm:text-sm font-semibold text-gray-200 text-right min-w-[55px] sm:min-w-[65px]">
+                            ${formatNumber(b.v)} 
+                            <span class="text-[9px] sm:text-xs text-gray-500 font-normal">Ton</span>
+                        </span>
+                        <!-- Persentase di paling kanan dengan lebar yang dikurangi -->
+                        <div class="flex items-center justify-end gap-1 w-[48px] sm:w-[58px] text-[9px] sm:text-[10px] font-bold ${bColor}">
+                            <i data-lucide="${bIcon}" class="w-2.5 h-2.5 sm:w-3 sm:h-3 ${opacityIcon}"></i>
+                            <span>${formatPct(b.d)}</span>
+                        </div>
+                    </div>
                 </div>
-            `).join('');
+                `;
+            }).join('');
 
             return `
                 <div class="bg-[#1e1e20] rounded-[24px] p-5 sm:p-6 border border-gray-800 hover:border-gray-700 transition-colors group relative overflow-hidden h-full shadow-lg">
@@ -643,11 +678,12 @@
                                 <div class="text-3xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white tracking-tight leading-none">${formatNumber(data.value)}</div>
                                 <div class="text-[10px] sm:text-xs md:text-lg font-medium text-gray-500">Ton</div>
                             </div>
+                            <!-- Pill Total Persentase -->
                             <div class="flex items-center gap-1 text-[9px] sm:text-xs md:text-sm font-medium px-1.5 py-0.5 sm:px-2.5 sm:py-1 rounded-full mb-0.5 ${diffClass} whitespace-nowrap shrink-0">
                                 <i data-lucide="${diffIcon}" class="w-3 h-3 sm:w-4 h-4"></i> ${displayPercent}
                             </div>
                         </div>
-                        <div class="space-y-1.5 pt-4 border-t border-gray-800">${breakdownHtml}</div>
+                        <div class="space-y-0.5 pt-4 border-t border-gray-800">${breakdownHtml}</div>
                     </div>
                 </div>
             `;
@@ -722,17 +758,16 @@
             const ctx = document.getElementById('mainChart').getContext('2d');
             const labels = filledData.map(d => d.tanggal.slice(-2));
             
-            // Konfigurasi palet warna
             const colors = {
                 'UREA': '#facc15',
                 'NPK': '#3b82f6',
-                'Urea Subsidi': '#f472b6',      // Pink
-                'Urea Non Subsidi': '#ffff00',  // Kuning Lebih Terang (Vivid Yellow)
-                'Urea Curah': '#f8fafc',        // Putih
-                'NPK Subsidi': '#1d4ed8',       // Biru Tua
-                'NPK Sawit': '#38bdf8',         // Biru Langit
-                'NPK Singkong': '#f87171',      // Merah
-                'NPK Kopi': '#4ade80'           // Hijau
+                'Urea Subsidi': '#f472b6',
+                'Urea Non Subsidi': '#ffff00',
+                'Urea Curah': '#f8fafc',
+                'NPK Subsidi': '#1d4ed8',
+                'NPK Sawit': '#38bdf8',
+                'NPK Singkong': '#f87171',
+                'NPK Kopi': '#4ade80'
             };
 
             const selectedFilters = Array.from(document.querySelectorAll('.chart-filter-checkbox:checked')).map(cb => cb.value);
