@@ -111,7 +111,8 @@
                     <!-- TREN STOK HARIAN (Span 2) -->
                     <div class="lg:col-span-2 bg-[#1e1e20] rounded-[24px] p-6 border border-gray-800 shadow-xl">
                         <div class="flex items-center gap-2 mb-6">
-                            <h3 class="text-lg font-semibold text-gray-100">TREN STOK HARIAN</h3>
+                            <i data-lucide="line-chart" class="w-5 h-5 text-blue-400"></i>
+                            <h3 class="text-lg font-semibold text-gray-100 uppercase">Tren Stok Harian</h3>
                         </div>
                         <div class="h-[320px] w-full relative">
                             <canvas id="mainChart"></canvas>
@@ -121,7 +122,7 @@
                     <!-- KOMPOSISI STOK (Span 1) -->
                     <div class="lg:col-span-1 bg-[#1e1e20] rounded-[24px] p-6 border border-gray-800 shadow-xl flex flex-col">
                         <div class="flex items-center gap-2 mb-6">
-                            <h3 class="text-lg font-semibold text-gray-100">KOMPOSISI HARI INI</h3>
+                            <h3 class="text-lg font-semibold text-gray-100 uppercase">Komposisi Hari Ini</h3>
                         </div>
                         <div class="flex-grow flex items-center justify-center relative min-h-[250px]">
                             <canvas id="donutChart"></canvas>
@@ -285,6 +286,7 @@
         // UTILITIES GLOBAL
         // =====================
         const formatNumber = (n) => {
+            // Menggunakan format standar Indonesia (titik ribuan, koma desimal)
             return new Intl.NumberFormat("id-ID", {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2
@@ -434,9 +436,10 @@
 
                 if (!response.ok) throw new Error("Gagal mengambil data");
                 const rawData = await response.json();
+                
+                // Ambil data untuk bulan terpilih dan urutkan
                 const raw = (rawData || []).filter((r) => r.tanggal?.startsWith(selectedMonth));
                 const grouped = {};
-
                 raw.forEach((r) => {
                     if (!grouped[r.tanggal]) {
                         grouped[r.tanggal] = {
@@ -449,19 +452,44 @@
                     grouped[r.tanggal][r.nama_produk] += r.stok;
                 });
 
-                const sorted = Object.values(grouped).sort((a, b) => new Date(a.tanggal).getTime() - new Date(b.tanggal).getTime());
                 const days = generateDays(selectedMonth);
+                
+                // Cari tanggal terakhir yang benar-benar ada input datanya di sistem
+                const entryDates = Object.keys(grouped).sort();
+                const latestEntryDate = entryDates.length > 0 ? entryDates[entryDates.length - 1] : null;
 
-                const filled = days.map(d => sorted.find(x => x.tanggal === d) || {
-                    tanggal: d, UREA: 0, NPK: 0,
+                let lastKnownData = {
+                    UREA: 0, NPK: 0,
                     "Urea Subsidi": 0, "Urea Non Subsidi": 0, "Urea Curah": 0,
                     "NPK Subsidi": 0, "NPK Sawit": 0, "NPK Kopi": 0, "NPK Singkong": 0,
+                };
+
+                const filled = days.map(d => {
+                    if (grouped[d]) {
+                        // Jika ada data di database, gunakan dan update data terakhir diketahui
+                        lastKnownData = { ...grouped[d] };
+                        return grouped[d];
+                    } else {
+                        // Jika tidak ada data:
+                        // Cek apakah tanggal ini berada di masa lalu/sekarang (sebelum input terakhir)
+                        if (latestEntryDate && d <= latestEntryDate) {
+                            // Forward Fill: ambil data dari hari sebelumnya
+                            return { ...lastKnownData, tanggal: d };
+                        } else {
+                            // Masa Depan: Jangan disamakan, biarkan nol
+                            return {
+                                tanggal: d, UREA: 0, NPK: 0,
+                                "Urea Subsidi": 0, "Urea Non Subsidi": 0, "Urea Curah": 0,
+                                "NPK Subsidi": 0, "NPK Sawit": 0, "NPK Kopi": 0, "NPK Singkong": 0,
+                            };
+                        }
+                    }
                 });
 
-                processKPIs(filled);
-                processRankings(filled);
+                processKPIs(filled, latestEntryDate);
+                processRankings(filled, latestEntryDate);
                 renderChart(filled);
-                renderDonutChart(filled);
+                renderDonutChart(filled, latestEntryDate);
                 toggleLoading(false);
             } catch (err) {
                 console.error(err);
@@ -481,16 +509,19 @@
             }
         }
 
-        function processKPIs(filledData) {
-            let validDataDays = filledData.filter((d) => d.UREA > 0 || d.NPK > 0);
-            let todayData = filledData.at(-1);
-            let yesterdayData = filledData.at(-2);
-
-            if (validDataDays.length >= 1) {
-                todayData = validDataDays[validDataDays.length - 1];
-                const todayIndex = filledData.findIndex(d => d.tanggal === todayData.tanggal);
-                yesterdayData = todayIndex > 0 ? filledData[todayIndex - 1] : todayData;
+        function processKPIs(filledData, latestDate) {
+            // Jika tidak ada data sama sekali di bulan ini
+            if (!latestDate) {
+                const empty = { UREA: 0, NPK: 0, breakdown: [] };
+                document.getElementById('kpi-urea').innerHTML = renderKpiCard({ ...empty, title: 'UREA', lastUpdated: '', diffPercent: 0 }, true);
+                document.getElementById('kpi-npk').innerHTML = renderKpiCard({ ...empty, title: 'NPK', lastUpdated: '', diffPercent: 0 }, false);
+                return;
             }
+
+            // Ambil data pada tanggal input terakhir
+            const todayData = filledData.find(d => d.tanggal === latestDate);
+            const idx = filledData.findIndex(d => d.tanggal === latestDate);
+            const yesterdayData = idx > 0 ? filledData[idx - 1] : todayData;
 
             const calcPercent = (today, yesterday) => {
                 if (yesterday === 0) return today > 0 ? 100 : 0;
@@ -498,11 +529,11 @@
             };
 
             const kpiUrea = {
-                title: "UREA", value: todayData.UREA, diff: todayData.UREA - yesterdayData.UREA, diffPercent: calcPercent(todayData.UREA, yesterdayData.UREA), lastUpdated: todayData.tanggal,
+                title: "UREA", value: todayData.UREA, diffPercent: calcPercent(todayData.UREA, yesterdayData.UREA), lastUpdated: todayData.tanggal,
                 breakdown: [ { n: "Subsidi", v: todayData["Urea Subsidi"] }, { n: "Non Subsidi", v: todayData["Urea Non Subsidi"] }, { n: "Curah", v: todayData["Urea Curah"] }]
             };
             const kpiNpk = {
-                title: "NPK", value: todayData.NPK, diff: todayData.NPK - yesterdayData.NPK, diffPercent: calcPercent(todayData.NPK, yesterdayData.NPK), lastUpdated: todayData.tanggal,
+                title: "NPK", value: todayData.NPK, diffPercent: calcPercent(todayData.NPK, yesterdayData.NPK), lastUpdated: todayData.tanggal,
                 breakdown: [ { n: "Subsidi", v: todayData["NPK Subsidi"] }, { n: "Sawit", v: todayData["NPK Sawit"] }, { n: "Kopi", v: todayData["NPK Kopi"] }, { n: "Singkong", v: todayData["NPK Singkong"] }]
             };
 
@@ -515,12 +546,13 @@
             const accentColor = isUrea ? "text-yellow-400" : "text-blue-400";
             const bgColor = isUrea ? "bg-yellow-500/10" : "bg-blue-500/10";
             const kpiIcon = isUrea ? "sprout" : "flask-conical"; 
-            const isPositive = data.diff >= 0;
+            const diffValue = data.diffPercent;
+            const isPositive = diffValue >= 0;
             const diffIcon = isPositive ? 'trending-up' : 'trending-down';
             const diffClass = isPositive ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400';
-            const diffValue = Math.abs(data.diff) === 0 ? "-" : Math.abs(data.diffPercent) + "%";
+            const displayPercent = diffValue === 0 ? "-" : Math.abs(diffValue) + "%";
 
-            let breakdownHtml = data.breakdown.map(b => `
+            let breakdownHtml = (data.breakdown || []).map(b => `
                 <div class="flex justify-between items-center group/item">
                     <span class="text-sm text-gray-400 flex items-center gap-2">
                         <span class="w-1.5 h-1.5 rounded-full ${isUrea ? 'bg-yellow-400' : 'bg-blue-400'} opacity-40 group-hover/item:opacity-100 transition-opacity"></span>
@@ -542,33 +574,51 @@
                             </div>
                             <span class="text-xs text-gray-500 font-medium bg-[#131314] px-2 py-1 rounded-md border border-gray-800">${formatDate(data.lastUpdated)}</span>
                         </div>
-                        <div class="flex items-end gap-4 mb-6">
-                            <div class="flex items-baseline gap-1.5">
-                                <div class="text-5xl font-bold text-white tracking-tight">${formatNumber(data.value)}</div>
-                                <div class="text-lg font-medium text-gray-500">Ton</div>
+                        
+                        <!-- Penyesuaian Responsif Angka KPI -->
+                        <div class="flex flex-wrap items-end gap-2 sm:gap-4 mb-6">
+                            <div class="flex items-baseline gap-1">
+                                <div class="text-3xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight leading-none">${formatNumber(data.value)}</div>
+                                <div class="text-sm sm:text-lg font-medium text-gray-500">Ton</div>
                             </div>
-                            <div class="flex items-center gap-1 text-sm font-medium px-2.5 py-1 rounded-full mb-1 ${diffClass}">
-                                <i data-lucide="${diffIcon}" class="w-4 h-4"></i> ${diffValue}
+                            <div class="flex items-center gap-1 text-[10px] sm:text-sm font-medium px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full mb-0.5 ${diffClass} whitespace-nowrap">
+                                <i data-lucide="${diffIcon}" class="w-3 h-3 sm:w-4 h-4"></i> ${displayPercent}
                             </div>
                         </div>
+                        
                         <div class="space-y-3 pt-4 border-t border-gray-800">${breakdownHtml}</div>
                     </div>
                 </div>
             `;
         }
 
-        function processRankings(filledData) {
+        function processRankings(filledData, latestDate) {
             const totals = {
                 "Urea Subsidi": 0, "Urea Non Subsidi": 0, "Urea Curah": 0,
                 "NPK Subsidi": 0, "NPK Sawit": 0, "NPK Kopi": 0, "NPK Singkong": 0,
             };
-            filledData.forEach((d) => { Object.keys(totals).forEach((k) => totals[k] += d[k] || 0); });
+            
+            // Hanya hitung rata-rata sampai tanggal input terakhir agar angka akurat
+            const activeData = latestDate ? filledData.filter(d => d.tanggal <= latestDate) : [];
+            const dayCount = activeData.length || 1;
+
+            activeData.forEach((d) => { 
+                Object.keys(totals).forEach((k) => totals[k] += d[k] || 0); 
+            });
+
             const rankUrea = [
-                { name: "Subsidi", value: totals["Urea Subsidi"] }, { name: "Non Subsidi", value: totals["Urea Non Subsidi"] }, { name: "Curah", value: totals["Urea Curah"] },
+                { name: "Subsidi", value: totals["Urea Subsidi"] / dayCount }, 
+                { name: "Non Subsidi", value: totals["Urea Non Subsidi"] / dayCount }, 
+                { name: "Curah", value: totals["Urea Curah"] / dayCount },
             ].sort((a, b) => b.value - a.value);
+
             const rankNpk = [
-                { name: "Subsidi", value: totals["NPK Subsidi"] }, { name: "Sawit", value: totals["NPK Sawit"] }, { name: "Kopi", value: totals["NPK Kopi"] }, { name: "Singkong", value: totals["NPK Singkong"] },
+                { name: "Subsidi", value: totals["NPK Subsidi"] / dayCount }, 
+                { name: "Sawit", value: totals["NPK Sawit"] / dayCount }, 
+                { name: "Kopi", value: totals["NPK Kopi"] / dayCount }, 
+                { name: "Singkong", value: totals["NPK Singkong"] / dayCount },
             ].sort((a, b) => b.value - a.value);
+
             document.getElementById('rank-urea').innerHTML = renderRankingCard("UREA", rankUrea, "#facc15");
             document.getElementById('rank-npk').innerHTML = renderRankingCard("NPK", rankNpk, "#3b82f6");
             lucide.createIcons();
@@ -594,12 +644,12 @@
                 `;
             }).join('');
 
-            const trophyColor = title === 'UREA' ? 'text-yellow-400' : 'text-blue-400';
+            const chartColor = title === 'UREA' ? 'text-yellow-400' : 'text-blue-400';
             return `
                 <div class="bg-[#1e1e20] rounded-[24px] p-6 border border-gray-800 shadow-lg">
                     <div class="flex items-center gap-2 mb-6">
-                        <i data-lucide="trophy" class="w-5 h-5 ${trophyColor}"></i>
-                        <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wide">Distribusi ${title}</h3>
+                        <i data-lucide="bar-chart-3" class="w-5 h-5 ${chartColor}"></i>
+                        <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wide">Rata-rata Stok ${title}</h3>
                     </div>
                     <div class="mb-6">${barsHtml}</div>
                     <div class="bg-[#131314] rounded-xl p-4 flex items-center justify-between border border-gray-800">
@@ -659,13 +709,15 @@
             });
         }
 
-        function renderDonutChart(filledData) {
+        function renderDonutChart(filledData, latestDate) {
             const ctx = document.getElementById('donutChart').getContext('2d');
-            let validDataDays = filledData.filter((d) => d.UREA > 0 || d.NPK > 0);
-            let latestData = validDataDays.length > 0 ? validDataDays[validDataDays.length - 1] : { UREA: 0, NPK: 0 };
+            
+            // Ambil data terbaru berdasarkan input terakhir sistem, bukan akhir bulan
+            const latestData = latestDate ? filledData.find(d => d.tanggal === latestDate) : { UREA: 0, NPK: 0 };
             const urea = latestData.UREA;
             const npk = latestData.NPK;
             const total = urea + npk;
+
             document.getElementById('donutTotal').innerText = formatNumber(total);
             if (donutChartInstance) donutChartInstance.destroy();
             donutChartInstance = new Chart(ctx, {
