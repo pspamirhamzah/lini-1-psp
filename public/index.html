@@ -118,7 +118,7 @@
                                 <h3 class="text-xs sm:text-sm font-semibold text-gray-400 uppercase tracking-wide truncate">Tren Stok Harian</h3>
                             </div>
                             
-                            <!-- Filter Produk di Grafik (Seragam dengan Filter Bulan) -->
+                            <!-- Filter Produk di Grafik -->
                             <div class="relative shrink-0">
                                 <button id="btnFilterChart" class="flex items-center gap-1.5 bg-[#1e1e20] border border-gray-700 rounded-xl px-3 py-1.5 shadow-sm hover:border-gray-500 transition-colors text-[10px] sm:text-xs font-medium text-gray-300">
                                     <i data-lucide="filter" class="w-3.5 h-3.5 text-gray-400"></i>
@@ -149,7 +149,7 @@
                                             <span class="text-xs text-gray-300">Urea Non Subsidi</span>
                                         </label>
                                         <label class="flex items-center gap-2 p-1.5 hover:bg-white/5 rounded-md cursor-pointer transition-colors">
-                                            <input type="checkbox" value="Urea Curah" class="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500 focus:ring-0 chart-filter-checkbox">
+                                            <input type="checkbox" value="Urea Curah" class="w-4 h-4 rounded border-gray-700 text-blue-500 focus:ring-0 chart-filter-checkbox">
                                             <span class="text-xs text-gray-300">Urea Curah</span>
                                         </label>
                                         <label class="flex items-center gap-2 p-1.5 hover:bg-white/5 rounded-md cursor-pointer transition-colors">
@@ -342,6 +342,7 @@
         // UTILITIES GLOBAL
         // =====================
         const formatNumber = (n) => {
+            // Menggunakan format standar Indonesia (koma untuk desimal)
             return new Intl.NumberFormat("id-ID", {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2
@@ -552,7 +553,7 @@
                     }
                 });
 
-                globalCurrentData = filled; // Simpan untuk filter grafik
+                globalCurrentData = filled;
                 processKPIs(filled, latestEntryDate);
                 processRankings(filled, latestEntryDate);
                 renderChart(filled);
@@ -726,7 +727,6 @@
             const ctx = document.getElementById('mainChart').getContext('2d');
             const labels = filledData.map(d => d.tanggal.slice(-2));
             
-            // Definisikan palet warna
             const colors = {
                 'UREA': '#facc15',
                 'NPK': '#3b82f6',
@@ -739,10 +739,8 @@
                 'NPK Kopi': '#bfdbfe'
             };
 
-            // Ambil pilihan filter dari UI
             const selectedFilters = Array.from(document.querySelectorAll('.chart-filter-checkbox:checked')).map(cb => cb.value);
             
-            // Bangun datasets berdasarkan filter
             const datasets = selectedFilters.map(key => {
                 const color = colors[key] || '#9ca3af';
                 let gradient = ctx.createLinearGradient(0, 0, 0, 320);
@@ -819,7 +817,11 @@
                     },
                     scales: {
                         x: { grid: { display: false }, ticks: { color: '#9ca3af', font: { family: 'Inter', size: 11 }, maxTicksLimit: 12, maxRotation: 0 }, border: { display: false } },
-                        y: { grid: { color: '#27272a', drawBorder: false, borderDash: [4, 4] }, border: { display: false }, ticks: { color: '#52525b', font: { family: 'Inter', size: 10 }, maxTicksLimit: 5, callback: (v) => formatNumber(v) } }
+                        y: { 
+                            grid: { color: '#27272a', drawBorder: false, borderDash: [4, 4] }, 
+                            border: { display: false }, 
+                            ticks: { display: false }
+                        }
                     }
                 }
             });
