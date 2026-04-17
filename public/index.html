@@ -110,9 +110,13 @@
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <!-- TREN STOK HARIAN (Span 2) -->
                     <div class="lg:col-span-2 bg-[#1e1e20] rounded-[24px] p-6 border border-gray-800 shadow-xl">
-                        <div class="flex items-center gap-2 mb-6">
-                            <i data-lucide="line-chart" class="w-5 h-5 text-blue-400"></i>
-                            <h3 class="text-lg font-semibold text-gray-100 uppercase">Tren Stok Harian</h3>
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="flex items-center gap-2">
+                                <i data-lucide="line-chart" class="w-5 h-5 text-blue-400"></i>
+                                <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wide">Tren Stok Harian</h3>
+                            </div>
+                            <!-- Label Bulan Berdasarkan Filter -->
+                            <span id="chartMonth" class="text-xs text-gray-500 font-medium bg-[#131314] px-2 py-1 rounded-md border border-gray-800 uppercase tracking-wider"></span>
                         </div>
                         <div class="h-[320px] w-full relative">
                             <canvas id="mainChart"></canvas>
@@ -123,7 +127,7 @@
                     <div class="lg:col-span-1 bg-[#1e1e20] rounded-[24px] p-6 border border-gray-800 shadow-xl flex flex-col">
                         <div class="flex items-center justify-between mb-6">
                             <div class="flex items-center gap-2">
-                                <h3 class="text-lg font-semibold text-gray-100 uppercase">Komposisi Hari Ini</h3>
+                                <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wide">Komposisi Hari Ini</h3>
                             </div>
                             <span id="donutDate" class="text-xs text-gray-500 font-medium bg-[#131314] px-2 py-1 rounded-md border border-gray-800"></span>
                         </div>
@@ -302,6 +306,15 @@
             return new Date(dateString).toLocaleDateString("id-ID", options);
         };
 
+        const formatMonthOnly = (monthString) => {
+            if (!monthString) return "";
+            const [year, month] = monthString.split("-");
+            const date = new Date(year, month - 1);
+            // Ambil nama bulan pendek (3 karakter) dan pastikan uppercase
+            const m = date.toLocaleDateString("id-ID", { month: "short" }).toUpperCase().substring(0, 3);
+            return `${m} ${year}`;
+        };
+
         let chartInstance = null;
         let donutChartInstance = null;
         const monthInput = document.getElementById('monthFilter');
@@ -432,6 +445,10 @@
         async function loadData() {
             const selectedMonth = monthInput.value;
             toggleLoading(true);
+
+            // Update Label Bulan di Grafik (3 Karakter Kapital)
+            document.getElementById('chartMonth').innerText = formatMonthOnly(selectedMonth);
+
             try {
                 const response = await fetch(`${SUPABASE_URL}/rest/v1/v_stok_harian?select=*`, {
                     headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
