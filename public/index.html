@@ -44,48 +44,44 @@
 
     <!-- HEADER AREA -->
     <header class="bg-[#131314]/80 backdrop-blur-md border-b border-gray-800 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-6 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-row justify-between items-center gap-2">
             
             <!-- Title -->
             <div class="flex items-center gap-3">
                 <div>
-                    <h1 class="text-xl font-semibold tracking-tight text-gray-100">
+                    <h1 class="text-lg sm:text-xl font-semibold tracking-tight text-gray-100 whitespace-nowrap">
                         LINI 1 PSP
                     </h1>
-                    <p class="text-sm text-gray-400 font-medium">
+                    <p class="hidden sm:block text-sm text-gray-400 font-medium">
                         Sistem Pemantauan Stok
                     </p>
                 </div>
             </div>
 
             <!-- Navigation & Controls -->
-            <div class="flex flex-wrap items-center gap-4">
+            <div class="flex items-center gap-2 sm:gap-4">
                 
-                <!-- Tab Menu Navigasi -->
-                <div class="flex bg-[#1e1e20] p-1 rounded-xl border border-gray-700 shadow-sm">
-                    <button onclick="switchView('dashboard')" id="tab-dashboard" 
-                        class="px-4 py-1.5 text-sm font-medium rounded-lg bg-[#131314] text-white shadow-sm border border-gray-800 transition-all">
-                        Dashboard
-                    </button>
-                    <button onclick="switchView('admin')" id="tab-admin" 
-                        class="px-4 py-1.5 text-sm font-medium rounded-lg text-gray-400 hover:text-gray-200 border border-transparent transition-all">
-                        Panel Admin
-                    </button>
-                </div>
-
                 <!-- Filter Bulan (Hanya di Dashboard) -->
-                <div id="filter-container" class="flex items-center bg-[#1e1e20] border border-gray-700 rounded-xl px-4 py-1.5 shadow-sm hover:border-gray-500 transition-colors">
+                <div id="filter-container" class="flex items-center bg-[#1e1e20] border border-gray-700 rounded-xl px-2 sm:px-4 py-1.5 shadow-sm hover:border-gray-500 transition-colors">
                     <input
                         type="month"
                         id="monthFilter"
-                        class="bg-transparent border-none outline-none text-sm font-medium text-gray-200 cursor-pointer w-[130px]"
+                        class="bg-transparent border-none outline-none text-xs sm:text-sm font-medium text-gray-200 cursor-pointer w-[100px] sm:w-[130px]"
                         style="color-scheme: dark;"
                     />
                 </div>
 
                 <!-- Tombol Logout (Hanya muncul jika sudah login) -->
-                <button id="btn-logout" onclick="prosesLogout()" class="hidden items-center gap-2 px-3 py-1.5 bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 rounded-xl text-sm font-medium transition-colors">
-                    <i data-lucide="log-out" class="w-4 h-4"></i> Logout
+                <button id="btn-logout" onclick="prosesLogout()" class="hidden items-center gap-2 px-3 py-1.5 bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 rounded-xl text-xs sm:text-sm font-medium transition-colors">
+                    <i data-lucide="log-out" class="w-4 h-4"></i> <span class="hidden sm:inline">Logout</span>
+                </button>
+
+                <!-- Tombol Panel Admin / Home (Icon Only) -->
+                <button onclick="switchView('admin')" id="tab-admin" class="text-gray-400 hover:text-white transition-colors p-1" title="Panel Admin">
+                    <i data-lucide="user" class="w-6 h-6"></i>
+                </button>
+                <button onclick="switchView('dashboard')" id="tab-dashboard" class="hidden text-gray-400 hover:text-white transition-colors p-1" title="Kembali ke Dashboard">
+                    <i data-lucide="home" class="w-6 h-6"></i>
                 </button>
             </div>
         </div>
@@ -282,16 +278,12 @@
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdmc3V1dWxkZGF1a3J2dHF0cWJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNDQ3ODQsImV4cCI6MjA5MTgyMDc4NH0.i2CkehZQpAPcJ6ErYyoQl9voRjZHxJq66VorVuoHkwQ";
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // Domain dummy yang digunakan di Supabase
         const DUMMY_DOMAIN = "@lini1.psp";
-
-        // State Login
         let isLoggedIn = false;
 
         // =====================
         // UTILITIES GLOBAL
         // =====================
-        // Format angka dengan 2 digit desimal dan menggunakan koma (,) sebagai pemisahnya
         const formatNumber = (n) => {
             return new Intl.NumberFormat("id-ID", {
                 minimumFractionDigits: 2,
@@ -318,22 +310,19 @@
             monthInput.value = new Date().toISOString().slice(0, 7);
             document.getElementById('tanggal').value = new Date().toISOString().split('T')[0];
 
-            // Cek status sesi dari supabase saat web dimuat
             const { data: { session } } = await supabaseClient.auth.getSession();
             isLoggedIn = !!session;
 
             switchView('dashboard');
-            
             monthInput.addEventListener('change', loadData);
 
-            // Listener otomatis jika auth berubah
             supabaseClient.auth.onAuthStateChange((event, session) => {
                 isLoggedIn = !!session;
             });
         });
 
         // =====================
-        // SISTEM LOGIN DUMMY EMAIL
+        // SISTEM LOGIN
         // =====================
         async function prosesLogin() {
             const usernameInput = document.getElementById('login-username').value.trim();
@@ -348,7 +337,6 @@
             }
 
             const dummyEmail = usernameInput.toLowerCase() + DUMMY_DOMAIN;
-
             btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> <span>Memeriksa...</span>`;
             btn.disabled = true;
             lucide.createIcons();
@@ -391,29 +379,21 @@
             const filterContainer = document.getElementById('filter-container');
             const btnLogout = document.getElementById('btn-logout');
 
-            const activeClass = "px-4 py-1.5 text-sm font-medium rounded-lg bg-[#131314] text-white shadow-sm border border-gray-800 transition-all";
-            const inactiveClass = "px-4 py-1.5 text-sm font-medium rounded-lg text-gray-400 hover:text-gray-200 border border-transparent transition-all";
-
             if (viewName === 'dashboard') {
-                tabDash.className = activeClass;
-                tabAdmin.className = inactiveClass;
-                
+                tabAdmin.classList.remove('hidden');
+                tabDash.classList.add('hidden');
                 viewDash.classList.remove('hidden');
                 viewLogin.classList.add('hidden');
                 viewAdmin.classList.add('hidden');
-                
                 filterContainer.classList.remove('hidden');
                 btnLogout.classList.add('hidden'); 
-
                 loadData(); 
             } 
             else if (viewName === 'admin') {
-                tabAdmin.className = activeClass;
-                tabDash.className = inactiveClass;
-                
+                tabAdmin.classList.add('hidden');
+                tabDash.classList.remove('hidden');
                 viewDash.classList.add('hidden');
                 filterContainer.classList.add('hidden');
-
                 if (isLoggedIn) {
                     viewLogin.classList.add('hidden');
                     viewAdmin.classList.remove('hidden');
@@ -482,7 +462,6 @@
                 processRankings(filled);
                 renderChart(filled);
                 renderDonutChart(filled);
-
                 toggleLoading(false);
             } catch (err) {
                 console.error(err);
@@ -554,10 +533,7 @@
             return `
                 <div class="bg-[#1e1e20] rounded-[24px] p-6 border border-gray-800 hover:border-gray-700 transition-colors group relative overflow-hidden h-full shadow-lg">
                     <div class="absolute -right-8 -top-8 w-32 h-32 rounded-full ${bgColor} blur-2xl opacity-20 group-hover:opacity-40 transition-opacity"></div>
-                    
-                    <!-- Icon Besar / Watermark (Baru) -->
                     <i data-lucide="${kpiIcon}" class="absolute -bottom-4 -right-4 w-32 h-32 ${accentColor} opacity-5 group-hover:opacity-10 transition-all duration-500 transform group-hover:scale-110 pointer-events-none"></i>
-
                     <div class="relative z-10">
                         <div class="flex justify-between items-start mb-4">
                             <div class="flex items-center gap-2">
@@ -586,17 +562,13 @@
                 "Urea Subsidi": 0, "Urea Non Subsidi": 0, "Urea Curah": 0,
                 "NPK Subsidi": 0, "NPK Sawit": 0, "NPK Kopi": 0, "NPK Singkong": 0,
             };
-
             filledData.forEach((d) => { Object.keys(totals).forEach((k) => totals[k] += d[k] || 0); });
-
             const rankUrea = [
                 { name: "Subsidi", value: totals["Urea Subsidi"] }, { name: "Non Subsidi", value: totals["Urea Non Subsidi"] }, { name: "Curah", value: totals["Urea Curah"] },
             ].sort((a, b) => b.value - a.value);
-
             const rankNpk = [
                 { name: "Subsidi", value: totals["NPK Subsidi"] }, { name: "Sawit", value: totals["NPK Sawit"] }, { name: "Kopi", value: totals["NPK Kopi"] }, { name: "Singkong", value: totals["NPK Singkong"] },
             ].sort((a, b) => b.value - a.value);
-
             document.getElementById('rank-urea').innerHTML = renderRankingCard("UREA", rankUrea, "#facc15");
             document.getElementById('rank-npk').innerHTML = renderRankingCard("NPK", rankNpk, "#3b82f6");
             lucide.createIcons();
@@ -606,7 +578,6 @@
             if (!data || data.length === 0) return '';
             const topItem = data[0];
             const maxValue = data[0].value || 1;
-
             let barsHtml = data.map((item, index) => {
                 const percentage = (item.value / maxValue) * 100;
                 const barColor = index === 0 ? color : color + '40';
@@ -624,7 +595,6 @@
             }).join('');
 
             const trophyColor = title === 'UREA' ? 'text-yellow-400' : 'text-blue-400';
-
             return `
                 <div class="bg-[#1e1e20] rounded-[24px] p-6 border border-gray-800 shadow-lg">
                     <div class="flex items-center gap-2 mb-6">
@@ -638,7 +608,6 @@
                                 <i data-lucide="award" class="w-6 h-6 text-yellow-500"></i>
                             </div>
                             <div>
-                                <div class="text-xs text-gray-500 font-medium uppercase tracking-wider">Top Varian</div>
                                 <div class="text-sm font-semibold text-gray-200">${topItem.name}</div>
                             </div>
                         </div>
@@ -658,15 +627,11 @@
             const labels = filledData.map(d => d.tanggal.slice(-2));
             const ureaData = filledData.map(d => d.UREA);
             const npkData = filledData.map(d => d.NPK);
-
             let gradientUrea = ctx.createLinearGradient(0, 0, 0, 320);
             gradientUrea.addColorStop(0, 'rgba(250, 204, 21, 0.4)'); gradientUrea.addColorStop(1, 'rgba(250, 204, 21, 0.0)');
-
             let gradientNpk = ctx.createLinearGradient(0, 0, 0, 320);
             gradientNpk.addColorStop(0, 'rgba(59, 130, 246, 0.4)'); gradientNpk.addColorStop(1, 'rgba(59, 130, 246, 0.0)');
-
             if (chartInstance) chartInstance.destroy();
-
             chartInstance = new Chart(ctx, {
                 type: 'line',
                 data: {
@@ -696,20 +661,13 @@
 
         function renderDonutChart(filledData) {
             const ctx = document.getElementById('donutChart').getContext('2d');
-            
-            // Ambil data hari terakhir yang "memiliki nilai" (sudah diinput)
             let validDataDays = filledData.filter((d) => d.UREA > 0 || d.NPK > 0);
             let latestData = validDataDays.length > 0 ? validDataDays[validDataDays.length - 1] : { UREA: 0, NPK: 0 };
-            
             const urea = latestData.UREA;
             const npk = latestData.NPK;
             const total = urea + npk;
-
-            // Update teks di tengah donat
             document.getElementById('donutTotal').innerText = formatNumber(total);
-
             if (donutChartInstance) donutChartInstance.destroy();
-
             donutChartInstance = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
@@ -722,19 +680,11 @@
                     }]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '75%',
+                    responsive: true, maintainAspectRatio: false, cutout: '75%',
                     plugins: {
                         legend: {
                             position: 'bottom',
-                            labels: {
-                                color: '#9ca3af',
-                                font: { family: 'Inter', size: 12, weight: '500' },
-                                padding: 20,
-                                usePointStyle: true,
-                                pointStyle: 'circle'
-                            }
+                            labels: { color: '#9ca3af', font: { family: 'Inter', size: 12, weight: '500' }, padding: 20, usePointStyle: true, pointStyle: 'circle' }
                         },
                         tooltip: {
                             backgroundColor: '#1e1e20', titleColor: '#9ca3af', bodyColor: '#f3f4f6', borderColor: '#374151', borderWidth: 1, padding: 12, boxPadding: 6, usePointStyle: true,
@@ -742,13 +692,7 @@
                                 label: function(context) {
                                     let value = context.raw;
                                     let percentage = total > 0 ? (value / total) * 100 : 0;
-                                    
-                                    // Format angka persentase dengan 2 desimal
-                                    let percentageFormatted = new Intl.NumberFormat("id-ID", {
-                                        minimumFractionDigits: 2,
-                                        maximumFractionDigits: 2
-                                    }).format(percentage);
-
+                                    let percentageFormatted = new Intl.NumberFormat("id-ID", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(percentage);
                                     return ` ${context.label}: ${formatNumber(value)} Ton (${percentageFormatted}%)`;
                                 }
                             }
@@ -758,62 +702,29 @@
             });
         }
 
-        // =====================
-        // FUNGSI ADMIN INPUT STOK
-        // =====================
         async function simpanData() {
             const tanggal = document.getElementById('tanggal').value;
             const btn = document.getElementById('btnSimpan');
-
-            if (!tanggal) {
-                showAdminMessage("Tanggal wajib diisi!", "error");
-                return;
-            }
-
+            if (!tanggal) { showAdminMessage("Tanggal wajib diisi!", "error"); return; }
             const inputProduk = [
-                { id: 'stok-urea-subsidi', nama: 'Urea Subsidi' },
-                { id: 'stok-urea-non-subsidi', nama: 'Urea Non Subsidi' },
-                { id: 'stok-urea-curah', nama: 'Urea Curah' },
-                { id: 'stok-npk-subsidi', nama: 'NPK Subsidi' },
-                { id: 'stok-npk-sawit', nama: 'NPK Sawit' },
-                { id: 'stok-npk-kopi', nama: 'NPK Kopi' },
-                { id: 'stok-npk-singkong', nama: 'NPK Singkong' }
+                { id: 'stok-urea-subsidi', nama: 'Urea Subsidi' }, { id: 'stok-urea-non-subsidi', nama: 'Urea Non Subsidi' }, { id: 'stok-urea-curah', nama: 'Urea Curah' },
+                { id: 'stok-npk-subsidi', nama: 'NPK Subsidi' }, { id: 'stok-npk-sawit', nama: 'NPK Sawit' }, { id: 'stok-npk-kopi', nama: 'NPK Kopi' }, { id: 'stok-npk-singkong', nama: 'NPK Singkong' }
             ];
-
             const dataToSave = inputProduk
                 .map(item => ({ nama: item.nama, stok: document.getElementById(item.id).value, elementId: item.id }))
                 .filter(item => item.stok !== "");
-
-            if (dataToSave.length === 0) {
-                showAdminMessage("Minimal isi jumlah stok pada salah satu produk!", "error");
-                return;
-            }
-
+            if (dataToSave.length === 0) { showAdminMessage("Minimal isi jumlah stok pada salah satu produk!", "error"); return; }
             btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Menyimpan...`;
             btn.disabled = true; btn.classList.add('opacity-70'); lucide.createIcons();
-          
             let successCount = 0;
             let errorMsg = "";
-
             for (const item of dataToSave) {
-                const { error } = await supabaseClient.rpc('input_stok_harian', {
-                    p_tanggal: tanggal, p_nama_produk: item.nama, p_stok: parseFloat(item.stok)
-                });
-                
-                if (error) {
-                    errorMsg = error.message;
-                    break; 
-                } else {
-                    successCount++;
-                }
+                const { error } = await supabaseClient.rpc('input_stok_harian', { p_tanggal: tanggal, p_nama_produk: item.nama, p_stok: parseFloat(item.stok) });
+                if (error) { errorMsg = error.message; break; } else { successCount++; }
             }
-          
             btn.innerHTML = `<i data-lucide="save" class="w-5 h-5"></i> <span>Simpan Semua Data</span>`;
             btn.disabled = false; btn.classList.remove('opacity-70'); lucide.createIcons();
-
-            if (errorMsg) {
-                showAdminMessage("Gagal menyimpan data: " + errorMsg, "error");
-            } else {
+            if (errorMsg) { showAdminMessage("Gagal menyimpan data: " + errorMsg, "error"); } else {
                 showAdminMessage(`Berhasil menyimpan ${successCount} varian stok produk.`, "success");
                 dataToSave.forEach(item => document.getElementById(item.elementId).value = ""); 
             }
