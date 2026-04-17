@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LINI 1 PSP - Dashboard</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #374151; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #4b5563; }
+
+        /* Dark mode calendar icon */
+        ::-webkit-calendar-picker-indicator { filter: invert(1); opacity: 0.7; cursor: pointer; }
+    </style>
+</head>
+<body class="min-h-screen bg-[#131314] text-gray-100 pb-12 selection:bg-blue-500/30">
+
+    <!-- HEADER AREA -->
+    <header class="bg-[#131314]/80 backdrop-blur-md border-b border-gray-800 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            
+            <!-- Title -->
+            <div class="flex items-center gap-3">
+                <div>
+                    <h1 class="text-xl font-semibold tracking-tight text-gray-100">
+                        LINI 1 PSP
+                    </h1>
+                    <p class="text-sm text-gray-400 font-medium">
+                        Sistem Pemantauan Stok
+                    </p>
+                </div>
+            </div>
+
+            <!-- Navigation & Controls -->
+            <div class="flex flex-wrap items-center gap-4">
+                
+                <!-- Tab Menu Navigasi -->
+                <div class="flex bg-[#1e1e20] p-1 rounded-xl border border-gray-700 shadow-sm">
+                    <button onclick="switchView('dashboard')" id="tab-dashboard" 
+                        class="px-4 py-1.5 text-sm font-medium rounded-lg bg-[#131314] text-white shadow-sm border border-gray-800 transition-all">
+                        Dashboard
+                    </button>
+                    <button onclick="switchView('admin')" id="tab-admin" 
+                        class="px-4 py-1.5 text-sm font-medium rounded-lg text-gray-400 hover:text-gray-200 border border-transparent transition-all">
+                        Panel Admin
+                    </button>
+                </div>
+
+                <!-- Filter Bulan (Hanya di Dashboard) -->
+                <div id="filter-container" class="flex items-center bg-[#1e1e20] border border-gray-700 rounded-xl px-3 py-1.5 shadow-sm hover:border-gray-500 transition-colors">
+                    <i data-lucide="calendar" class="w-4 h-4 text-gray-400 mr-2"></i>
+                    <input
+                        type="month"
+                        id="monthFilter"
+                        class="bg-transparent border-none outline-none text-sm font-medium text-gray-200 cursor-pointer w-[120px]"
+                        style="color-scheme: dark;"
+                    />
+                </div>
+
+                <!-- Tombol Logout (Hanya muncul jika sudah login) -->
+                <button id="btn-logout" onclick="prosesLogout()" class="hidden items-center gap-2 px-3 py-1.5 bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 rounded-xl text-sm font-medium transition-colors">
+                    <i data-lucide="log-out" class="w-4 h-4"></i> Logout
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="max-w-7xl mx-auto px-6 mt-8">
+        
+        <!-- ============================================== -->
+        <!-- VIEW 1: DASHBOARD -->
+        <!-- ============================================== -->
+        <div id="view-dashboard" class="space-y-6">
+            <div id="loadingIndicator" class="flex flex-col items-center justify-center h-64 opacity-60">
+                <i data-lucide="activity" class="w-10 h-10 text-blue-500 animate-pulse mb-4"></i>
+                <span class="text-gray-400 font-medium">Memuat data logistik...</span>
+            </div>
+            
+            <div id="dashboardContent" class="hidden space-y-6">
+                <!-- Data chart dan KPI -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div id="kpi-urea"></div>
+                    <div id="kpi-npk"></div>
+                </div>
+
+                <div class="bg-[#1e1e20] rounded-[24px] p-6 border border-gray-800 shadow-xl">
+                    <div class="flex items-center gap-2 mb-6">
+                        <h3 class="text-lg font-semibold text-gray-100">TREN STOK HARIAN</h3>
+                    </div>
+                    <div class="h-[320px] w-full relative">
+                        <canvas id="mainChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div id="rank-urea"></div>
+                    <div id="rank-npk"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- VIEW 2: LOGIN ADMIN -->
+        <!-- ============================================== -->
+        <div id="view-login" class="hidden flex justify-center pb-12 pt-8">
+            <div class="w-full max-w-sm">
+                <div class="text-center mb-8">
+                    <h2 class="text-2xl font-bold text-white tracking-tight">Login Admin</h2>
+                    <p class="text-sm text-gray-400 mt-1">Otentikasi akses ke sistem</p>
+                </div>
+
+                <div class="bg-[#1e1e20] rounded-[24px] p-8 border border-gray-800 shadow-xl relative overflow-hidden">
+                    <div class="absolute -top-20 -right-20 w-40 h-40 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                    <div class="space-y-5 relative z-10">
+                        <!-- Input Username -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-400 mb-2">Username</label>
+                            <div class="relative">
+                                <i data-lucide="user" class="absolute left-4 top-3.5 w-5 h-5 text-gray-500"></i>
+                                <input type="text" id="login-username" placeholder="Masukkan username" 
+                                    class="w-full bg-[#131314] border border-gray-700 text-gray-200 rounded-xl pl-11 pr-4 py-3 outline-none focus:border-blue-500 focus:ring-1 transition-all"
+                                    autocomplete="off">
+                            </div>
+                        </div>
+                        <!-- Input Password -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-400 mb-2">Password</label>
+                            <div class="relative">
+                                <i data-lucide="lock" class="absolute left-4 top-3.5 w-5 h-5 text-gray-500"></i>
+                                <input type="password" id="login-password" placeholder="••••••••" 
+                                    class="w-full bg-[#131314] border border-gray-700 text-gray-200 rounded-xl pl-11 pr-4 py-3 outline-none focus:border-blue-500 focus:ring-1 transition-all"
+                                    onkeypress="if(event.key === 'Enter') prosesLogin()">
+                            </div>
+                        </div>
+
+                        <div id="login-message" class="hidden rounded-xl p-3 text-sm font-medium border bg-red-500/10 text-red-400 border-red-500/20 text-center"></div>
+
+                        <button onclick="prosesLogin()" id="btn-login"
+                            class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3.5 rounded-xl transition-colors shadow-lg shadow-blue-600/20 mt-2 flex justify-center items-center gap-2">
+                            <span>Masuk</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- VIEW 3: ADMIN PANEL (Input Stok) -->
+        <!-- ============================================== -->
+        <div id="view-admin" class="hidden flex justify-center pb-12 pt-4">
+            <div class="w-full max-w-md">
+                <div class="bg-[#1e1e20] rounded-[24px] p-8 border border-gray-800 shadow-xl relative overflow-hidden">
+                    <div class="absolute -top-20 -right-20 w-40 h-40 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                    <div class="text-center mb-6 relative z-10">
+                        <h2 class="text-xl font-bold text-white tracking-tight">Input Stok Harian</h2>
+                        <p class="text-sm text-gray-400 mt-1">Panel pembaruan data logistik Lini 1</p>
+                    </div>
+
+                    <div class="space-y-5 relative z-10">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-400 mb-2">Tanggal</label>
+                            <input type="date" id="tanggal" class="w-full bg-[#131314] border border-gray-700 text-gray-200 rounded-xl px-4 py-3 outline-none focus:border-blue-500 focus:ring-1 transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-400 mb-2">Kategori</label>
+                            <select id="kategori" onchange="loadProduk()" class="w-full bg-[#131314] border border-gray-700 text-gray-200 rounded-xl px-4 py-3 outline-none focus:border-blue-500 focus:ring-1 transition-all appearance-none cursor-pointer">
+                                <option value="">-- Pilih Kategori --</option>
+                                <option value="UREA">UREA</option>
+                                <option value="NPK">NPK</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-400 mb-2">Varian Produk</label>
+                            <select id="produk" disabled class="w-full bg-[#131314] border border-gray-700 text-gray-200 rounded-xl px-4 py-3 outline-none focus:border-blue-500 focus:ring-1 transition-all appearance-none disabled:opacity-50">
+                                <option value="">-- Menunggu Kategori --</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-400 mb-2">Jumlah Stok (Ton)</label>
+                            <input type="number" step="any" id="stok" placeholder="Misal: 5000" class="w-full bg-[#131314] border border-gray-700 text-gray-200 rounded-xl px-4 py-3 outline-none focus:border-blue-500 focus:ring-1 transition-all">
+                        </div>
+
+                        <div id="message" class="hidden rounded-xl p-4 text-sm font-medium flex items-center gap-2 transition-all"></div>
+
+                        <button onclick="simpanData()" id="btnSimpan" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3.5 rounded-xl transition-colors shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2 mt-2">
+                            <i data-lucide="save" class="w-5 h-5"></i><span>Simpan Data</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="max-w-7xl mx-auto px-6 mt-12 mb-4 pt-6 border-t border-gray-800/60 text-center">
+        <p class="text-sm font-medium text-gray-400">Admin Pemasaran &amp; Penjualan</p>
+        <p class="text-xs text-gray-500 mt-1">Design by 00.0034</p>
+    </footer>
+
+    <script>
+        // =====================
+        // KONFIGURASI SUPABASE
+        // =====================
+        const SUPABASE_URL = "https://gfsuuulddaukrvtqtqbb.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdmc3V1dWxkZGF1a3J2dHF0cWJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNDQ3ODQsImV4cCI6MjA5MTgyMDc4NH0.i2CkehZQpAPcJ6ErYyoQl9voRjZHxJq66VorVuoHkwQ";
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // Domain dummy yang digunakan di Supabase
+        // Ganti string ini jika Anda membuat email dengan akhiran yang berbeda
+        const DUMMY_DOMAIN = "@pusri.id";
+
+        // State Login
+        let isLoggedIn = false;
+
+        // =====================
+        // UTILITIES GLOBAL
+        // =====================
+        // Format angka dengan titik koma (;) sebagai ganti koma desimal, sesuai preferensi Anda.
+        const formatNumber = (n) => {
+            let formatted = new Intl.NumberFormat("id-ID").format(n || 0);
+            return formatted.replace(/,/g, ';'); 
+        };
+
+        const formatDate = (dateString) => {
+            if (!dateString) return "";
+            const options = { day: "numeric", month: "short", year: "numeric" };
+            return new Date(dateString).toLocaleDateString("id-ID", options);
+        };
+
+        let chartInstance = null;
+        const monthInput = document.getElementById('monthFilter');
+        
+        // =====================
+        // INISIALISASI
+        // =====================
+        document.addEventListener('DOMContentLoaded', async () => {
+            lucide.createIcons();
+            
+            monthInput.value = new Date().toISOString().slice(0, 7);
+            document.getElementById('tanggal').value = new Date().toISOString().split('T')[0];
+
+            // Cek status sesi dari supabase saat web dimuat
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            isLoggedIn = !!session;
+
+            switchView('dashboard');
+            
+            monthInput.addEventListener('change', loadData);
+
+            // Listener otomatis jika auth berubah (misal token habis atau logout di tab lain)
+            supabaseClient.auth.onAuthStateChange((event, session) => {
+                isLoggedIn = !!session;
+            });
+        });
+
+        // =====================
+        // SISTEM LOGIN DUMMY EMAIL
+        // =====================
+        async function prosesLogin() {
+            const usernameInput = document.getElementById('login-username').value.trim();
+            const pass = document.getElementById('login-password').value;
+            const msg = document.getElementById('login-message');
+            const btn = document.getElementById('btn-login');
+
+            if(!usernameInput || !pass) {
+                msg.textContent = "Username dan password wajib diisi!";
+                msg.classList.remove('hidden');
+                return;
+            }
+
+            // Gabungkan username dengan dummy domain
+            const dummyEmail = usernameInput.toLowerCase() + DUMMY_DOMAIN;
+
+            btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> <span>Memeriksa...</span>`;
+            btn.disabled = true;
+            lucide.createIcons();
+
+            const { data, error } = await supabaseClient.auth.signInWithPassword({
+                email: dummyEmail,
+                password: pass,
+            });
+
+            btn.innerHTML = `<span>Masuk</span>`;
+            btn.disabled = false;
+
+            if (error) {
+                // Pesan disesuaikan dengan konteks username
+                msg.textContent = "Username atau Password salah!";
+                msg.classList.remove('hidden');
+            } else {
+                document.getElementById('login-username').value = "";
+                document.getElementById('login-password').value = "";
+                msg.classList.add('hidden');
+                switchView('admin');
+            }
+        }
+
+        async function prosesLogout() {
+            await supabaseClient.auth.signOut();
+            switchView('dashboard');
+        }
+
+        // =====================
+        // NAVIGASI VIEW
+        // =====================
+        function switchView(viewName) {
+            const tabDash = document.getElementById('tab-dashboard');
+            const tabAdmin = document.getElementById('tab-admin');
+            
+            const viewDash = document.getElementById('view-dashboard');
+            const viewLogin = document.getElementById('view-login');
+            const viewAdmin = document.getElementById('view-admin');
+            
+            const filterContainer = document.getElementById('filter-container');
+            const btnLogout = document.getElementById('btn-logout');
+
+            const activeClass = "px-4 py-1.5 text-sm font-medium rounded-lg bg-[#131314] text-white shadow-sm border border-gray-800 transition-all";
+            const inactiveClass = "px-4 py-1.5 text-sm font-medium rounded-lg text-gray-400 hover:text-gray-200 border border-transparent transition-all";
+
+            if (viewName === 'dashboard') {
+                tabDash.className = activeClass;
+                tabAdmin.className = inactiveClass;
+                
+                viewDash.classList.remove('hidden');
+                viewLogin.classList.add('hidden');
+                viewAdmin.classList.add('hidden');
+                
+                filterContainer.classList.remove('hidden');
+                btnLogout.classList.add('hidden'); 
+
+                loadData(); 
+            } 
+            else if (viewName === 'admin') {
+                tabAdmin.className = activeClass;
+                tabDash.className = inactiveClass;
+                
+                viewDash.classList.add('hidden');
+                filterContainer.classList.add('hidden');
+
+                if (isLoggedIn) {
+                    viewLogin.classList.add('hidden');
+                    viewAdmin.classList.remove('hidden');
+                    btnLogout.classList.remove('hidden');
+                    btnLogout.classList.add('flex');
+                } else {
+                    viewLogin.classList.remove('hidden');
+                    viewAdmin.classList.add('hidden');
+                    btnLogout.classList.add('hidden');
+                }
+            }
+        }
+
+        // =====================
+        // FUNGSI DASHBOARD & CHART
+        // =====================
+        function generateDays(month) {
+            const [y, m] = month.split("-").map(Number);
+            const d = new Date(y, m - 1, 1);
+            const days = [];
+            while (d.getMonth() === m - 1) {
+                const year = d.getFullYear();
+                const monthStr = String(d.getMonth() + 1).padStart(2, '0');
+                const dayStr = String(d.getDate()).padStart(2, '0');
+                days.push(`${year}-${monthStr}-${dayStr}`);
+                d.setDate(d.getDate() + 1);
+            }
+            return days;
+        }
+
+        async function loadData() {
+            const selectedMonth = monthInput.value;
+            toggleLoading(true);
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/v_stok_harian?select=*`, {
+                    headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
+                });
+
+                if (!response.ok) throw new Error("Gagal mengambil data");
+                const rawData = await response.json();
+                const raw = (rawData || []).filter((r) => r.tanggal?.startsWith(selectedMonth));
+                const grouped = {};
+
+                raw.forEach((r) => {
+                    if (!grouped[r.tanggal]) {
+                        grouped[r.tanggal] = {
+                            tanggal: r.tanggal, UREA: 0, NPK: 0,
+                            "Urea Subsidi": 0, "Urea Non Subsidi": 0, "Urea Curah": 0,
+                            "NPK Subsidi": 0, "NPK Sawit": 0, "NPK Kopi": 0, "NPK Singkong": 0,
+                        };
+                    }
+                    grouped[r.tanggal][r.kategori] += r.stok;
+                    grouped[r.tanggal][r.nama_produk] += r.stok;
+                });
+
+                const sorted = Object.values(grouped).sort((a, b) => new Date(a.tanggal).getTime() - new Date(b.tanggal).getTime());
+                const days = generateDays(selectedMonth);
+
+                const filled = days.map(d => sorted.find(x => x.tanggal === d) || {
+                    tanggal: d, UREA: 0, NPK: 0,
+                    "Urea Subsidi": 0, "Urea Non Subsidi": 0, "Urea Curah": 0,
+                    "NPK Subsidi": 0, "NPK Sawit": 0, "NPK Kopi": 0, "NPK Singkong": 0,
+                });
+
+                processKPIs(filled);
+                processRankings(filled);
+                renderChart(filled);
+
+                toggleLoading(false);
+            } catch (err) {
+                console.error(err);
+                toggleLoading(false);
+            }
+        }
+
+        function toggleLoading(isLoading) {
+            const loader = document.getElementById('loadingIndicator');
+            const content = document.getElementById('dashboardContent');
+            if (isLoading) {
+                loader.classList.remove('hidden');
+                content.classList.add('hidden');
+            } else {
+                loader.classList.add('hidden');
+                content.classList.remove('hidden');
+            }
+        }
+
+        function processKPIs(filledData) {
+            let validDataDays = filledData.filter((d) => d.UREA > 0 || d.NPK > 0);
+            let todayData = filledData.at(-1);
+            let yesterdayData = filledData.at(-2);
+
+            if (validDataDays.length >= 1) {
+                todayData = validDataDays[validDataDays.length - 1];
+                const todayIndex = filledData.findIndex(d => d.tanggal === todayData.tanggal);
+                yesterdayData = todayIndex > 0 ? filledData[todayIndex - 1] : todayData;
+            }
+
+            const kpiUrea = {
+                title: "UREA", value: todayData.UREA, diff: todayData.UREA - yesterdayData.UREA, lastUpdated: todayData.tanggal,
+                breakdown: [ { n: "Subsidi", v: todayData["Urea Subsidi"] }, { n: "Non Subsidi", v: todayData["Urea Non Subsidi"] }, { n: "Curah", v: todayData["Urea Curah"] }]
+            };
+            const kpiNpk = {
+                title: "NPK", value: todayData.NPK, diff: todayData.NPK - yesterdayData.NPK, lastUpdated: todayData.tanggal,
+                breakdown: [ { n: "Subsidi", v: todayData["NPK Subsidi"] }, { n: "Sawit", v: todayData["NPK Sawit"] }, { n: "Kopi", v: todayData["NPK Kopi"] }, { n: "Singkong", v: todayData["NPK Singkong"] }]
+            };
+
+            document.getElementById('kpi-urea').innerHTML = renderKpiCard(kpiUrea, true);
+            document.getElementById('kpi-npk').innerHTML = renderKpiCard(kpiNpk, false);
+            lucide.createIcons();
+        }
+
+        function renderKpiCard(data, isUrea) {
+            const accentColor = isUrea ? "text-yellow-400" : "text-blue-400";
+            const bgColor = isUrea ? "bg-yellow-500/10" : "bg-blue-500/10";
+            const kpiIcon = isUrea ? "sprout" : "flask-conical"; 
+            const isPositive = data.diff >= 0;
+            const diffIcon = isPositive ? 'trending-up' : 'trending-down';
+            const diffClass = isPositive ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400';
+            const diffValue = Math.abs(data.diff) === 0 ? "-" : formatNumber(Math.abs(data.diff));
+
+            let breakdownHtml = data.breakdown.map(b => `
+                <div class="flex justify-between items-center group/item">
+                    <span class="text-sm text-gray-400 flex items-center gap-2">
+                        <span class="w-1.5 h-1.5 rounded-full ${isUrea ? 'bg-yellow-400' : 'bg-blue-400'} opacity-40 group-hover/item:opacity-100 transition-opacity"></span>
+                        ${b.n}
+                    </span>
+                    <span class="text-sm font-semibold text-gray-200">${formatNumber(b.v)}</span>
+                </div>
+            `).join('');
+
+            return `
+                <div class="bg-[#1e1e20] rounded-[24px] p-6 border border-gray-800 hover:border-gray-700 transition-colors group relative overflow-hidden h-full shadow-lg">
+                    <div class="absolute -right-8 -top-8 w-32 h-32 rounded-full ${bgColor} blur-2xl opacity-20 group-hover:opacity-40 transition-opacity"></div>
+                    <div class="relative z-10">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex items-center gap-2">
+                                <div class="${accentColor}"><i data-lucide="${kpiIcon}" class="w-6 h-6"></i></div>
+                                <h2 class="text-sm font-semibold text-gray-400 tracking-wide uppercase">TOTAL STOK ${data.title}</h2>
+                            </div>
+                            <span class="text-xs text-gray-500 font-medium bg-[#131314] px-2 py-1 rounded-md border border-gray-800">${formatDate(data.lastUpdated)}</span>
+                        </div>
+                        <div class="flex items-end gap-4 mb-6">
+                            <div class="text-5xl font-bold text-white tracking-tight">${formatNumber(data.value)}</div>
+                            <div class="flex items-center gap-1 text-sm font-medium px-2.5 py-1 rounded-full mb-1 ${diffClass}">
+                                <i data-lucide="${diffIcon}" class="w-4 h-4"></i> ${diffValue}
+                            </div>
+                        </div>
+                        <div class="space-y-3 pt-4 border-t border-gray-800">${breakdownHtml}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function processRankings(filledData) {
+            const totals = {
+                "Urea Subsidi": 0, "Urea Non Subsidi": 0, "Urea Curah": 0,
+                "NPK Subsidi": 0, "NPK Sawit": 0, "NPK Kopi": 0, "NPK Singkong": 0,
+            };
+
+            filledData.forEach((d) => { Object.keys(totals).forEach((k) => totals[k] += d[k] || 0); });
+
+            const rankUrea = [
+                { name: "Subsidi", value: totals["Urea Subsidi"] }, { name: "Non Subsidi", value: totals["Urea Non Subsidi"] }, { name: "Curah", value: totals["Urea Curah"] },
+            ].sort((a, b) => b.value - a.value);
+
+            const rankNpk = [
+                { name: "Subsidi", value: totals["NPK Subsidi"] }, { name: "Sawit", value: totals["NPK Sawit"] }, { name: "Kopi", value: totals["NPK Kopi"] }, { name: "Singkong", value: totals["NPK Singkong"] },
+            ].sort((a, b) => b.value - a.value);
+
+            document.getElementById('rank-urea').innerHTML = renderRankingCard("UREA", rankUrea, "#facc15");
+            document.getElementById('rank-npk').innerHTML = renderRankingCard("NPK", rankNpk, "#3b82f6");
+            lucide.createIcons();
+        }
+
+        function renderRankingCard(title, data, color) {
+            if (!data || data.length === 0) return '';
+            const topItem = data[0];
+            const maxValue = data[0].value || 1;
+
+            let barsHtml = data.map((item, index) => {
+                const percentage = (item.value / maxValue) * 100;
+                const barColor = index === 0 ? color : color + '40';
+                return `
+                    <div class="mb-3">
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="font-medium text-gray-300">${item.name}</span>
+                            <span class="font-semibold text-gray-100">${formatNumber(item.value)}</span>
+                        </div>
+                        <div class="h-5 bg-gray-800 rounded-r-lg w-full">
+                            <div class="h-full rounded-r-lg transition-all duration-1000 ease-out" style="width: ${percentage}%; background-color: ${barColor}"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            const trophyColor = title === 'UREA' ? 'text-yellow-400' : 'text-blue-400';
+
+            return `
+                <div class="bg-[#1e1e20] rounded-[24px] p-6 border border-gray-800 shadow-lg">
+                    <div class="flex items-center gap-2 mb-6">
+                        <i data-lucide="trophy" class="w-5 h-5 ${trophyColor}"></i>
+                        <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wide">Distribusi ${title}</h3>
+                    </div>
+                    <div class="mb-6">${barsHtml}</div>
+                    <div class="bg-[#131314] rounded-xl p-4 flex items-center justify-between border border-gray-800">
+                        <div class="flex items-center gap-3">
+                            <div class="bg-[#1e1e20] border border-gray-700 p-2 rounded-lg shadow-sm">
+                                <i data-lucide="award" class="w-6 h-6 text-yellow-500"></i>
+                            </div>
+                            <div>
+                                <div class="text-xs text-gray-500 font-medium uppercase tracking-wider">Top Varian</div>
+                                <div class="text-sm font-semibold text-gray-200">${topItem.name}</div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-lg font-semibold text-white">${formatNumber(topItem.value)}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderChart(filledData) {
+            const ctx = document.getElementById('mainChart').getContext('2d');
+            const labels = filledData.map(d => d.tanggal.slice(-2));
+            const ureaData = filledData.map(d => d.UREA);
+            const npkData = filledData.map(d => d.NPK);
+
+            let gradientUrea = ctx.createLinearGradient(0, 0, 0, 320);
+            gradientUrea.addColorStop(0, 'rgba(250, 204, 21, 0.4)'); gradientUrea.addColorStop(1, 'rgba(250, 204, 21, 0.0)');
+
+            let gradientNpk = ctx.createLinearGradient(0, 0, 0, 320);
+            gradientNpk.addColorStop(0, 'rgba(59, 130, 246, 0.4)'); gradientNpk.addColorStop(1, 'rgba(59, 130, 246, 0.0)');
+
+            if (chartInstance) chartInstance.destroy();
+
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'UREA', data: ureaData, borderColor: '#facc15', backgroundColor: gradientUrea, borderWidth: 3, fill: true, tension: 0.4, pointRadius: 0, pointHoverRadius: 6, pointBackgroundColor: '#1e1e20', pointBorderColor: '#facc15', pointBorderWidth: 2, },
+                        { label: 'NPK', data: npkData, borderColor: '#3b82f6', backgroundColor: gradientNpk, borderWidth: 3, fill: true, tension: 0.4, pointRadius: 0, pointHoverRadius: 6, pointBackgroundColor: '#1e1e20', pointBorderColor: '#3b82f6', pointBorderWidth: 2, }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#1e1e20', titleColor: '#9ca3af', bodyColor: '#f3f4f6', borderColor: '#374151', borderWidth: 1, padding: 12, boxPadding: 6, usePointStyle: true,
+                            titleFont: { family: 'Inter', size: 12, weight: '600' }, bodyFont: { family: 'Inter', size: 14, weight: 'bold' },
+                            callbacks: { title: function(context) { return formatDate(filledData[context[0].dataIndex].tanggal); }, label: function(context) { return context.dataset.label + ': ' + formatNumber(context.raw); } }
+                        }
+                    },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: '#9ca3af', font: { family: 'Inter', size: 12 }, maxTicksLimit: 10, maxRotation: 0 }, border: { display: false } },
+                        y: { grid: { color: '#27272a', drawBorder: false, borderDash: [4, 4] }, border: { display: false }, ticks: { display: false, maxTicksLimit: 5 } }
+                    }
+                }
+            });
+        }
+
+        // =====================
+        // FUNGSI ADMIN INPUT STOK
+        // =====================
+        async function loadProduk() {
+            const kategori = document.getElementById('kategori').value;
+            const selectProduk = document.getElementById('produk');
+            
+            if (!kategori) {
+                selectProduk.innerHTML = "<option value=''>-- Menunggu Kategori --</option>";
+                selectProduk.disabled = true;
+                return;
+            }
+
+            selectProduk.innerHTML = "<option value=''>Memuat produk...</option>";
+            selectProduk.disabled = true;
+
+            const { data, error } = await supabaseClient.from('produk').select('nama_produk, kategori').eq('kategori', kategori).order('nama_produk');
+          
+            if (error) {
+                showAdminMessage("Gagal memuat produk: " + error.message, "error");
+                return;
+            }
+          
+            selectProduk.innerHTML = "<option value=''>-- Pilih Produk --</option>";
+            data.forEach(p => {
+                const option = document.createElement('option');
+                option.value = p.nama_produk;
+                option.textContent = p.nama_produk;
+                selectProduk.appendChild(option);
+            });
+            
+            selectProduk.disabled = false;
+        }
+
+        async function simpanData() {
+            const tanggal = document.getElementById('tanggal').value;
+            const produk = document.getElementById('produk').value;
+            const stok = document.getElementById('stok').value;
+            const btn = document.getElementById('btnSimpan');
+
+            if (!tanggal || !produk || !stok) {
+                showAdminMessage("Semua kolom wajib diisi!", "error");
+                return;
+            }
+
+            btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Menyimpan...`;
+            btn.disabled = true; btn.classList.add('opacity-70'); lucide.createIcons();
+          
+            const { error } = await supabaseClient.rpc('input_stok_harian', {
+                p_tanggal: tanggal, p_nama_produk: produk, p_stok: parseFloat(stok)
+            });
+          
+            btn.innerHTML = `<i data-lucide="save" class="w-5 h-5"></i> <span>Simpan Data</span>`;
+            btn.disabled = false; btn.classList.remove('opacity-70'); lucide.createIcons();
+
+            if (error) {
+                showAdminMessage("Gagal menyimpan data: " + error.message, "error");
+            } else {
+                showAdminMessage(`Berhasil menyimpan ${formatNumber(stok)} Ton untuk ${produk}.`, "success");
+                document.getElementById('stok').value = ""; 
+            }
+        }
+
+        function showAdminMessage(text, type) {
+            const msgBox = document.getElementById('message');
+            msgBox.classList.remove('hidden', 'bg-red-500/10', 'text-red-400', 'border-red-500/20', 'bg-emerald-500/10', 'text-emerald-400', 'border-emerald-500/20');
+            msgBox.classList.add('border');
+            if (type === 'error') {
+                msgBox.classList.add('bg-red-500/10', 'text-red-400', 'border-red-500/20');
+                msgBox.innerHTML = `<i data-lucide="alert-circle" class="w-5 h-5 shrink-0"></i> <span>${text}</span>`;
+            } else {
+                msgBox.classList.add('bg-emerald-500/10', 'text-emerald-400', 'border-emerald-500/20');
+                msgBox.innerHTML = `<i data-lucide="check-circle-2" class="w-5 h-5 shrink-0"></i> <span>${text}</span>`;
+            }
+            lucide.createIcons();
+            setTimeout(() => { msgBox.classList.add('hidden'); }, 5000);
+        }
+    </script>
+</body>
+</html>
