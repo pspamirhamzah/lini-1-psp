@@ -149,7 +149,7 @@
                                             <span class="text-xs text-gray-300">Urea Non Subsidi</span>
                                         </label>
                                         <label class="flex items-center gap-2 p-1.5 hover:bg-white/5 rounded-md cursor-pointer transition-colors">
-                                            <input type="checkbox" value="Urea Curah" class="w-4 h-4 rounded border-gray-700 text-blue-500 focus:ring-0 chart-filter-checkbox">
+                                            <input type="checkbox" value="Urea Curah" class="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500 focus:ring-0 chart-filter-checkbox">
                                             <span class="text-xs text-gray-300">Urea Curah</span>
                                         </label>
                                         <label class="flex items-center gap-2 p-1.5 hover:bg-white/5 rounded-md cursor-pointer transition-colors">
@@ -336,13 +336,12 @@
 
         const DUMMY_DOMAIN = "@lini1.psp";
         let isLoggedIn = false;
-        let globalCurrentData = []; // Menyimpan data bulan aktif untuk filter grafik
+        let globalCurrentData = [];
 
         // =====================
         // UTILITIES GLOBAL
         // =====================
         const formatNumber = (n) => {
-            // Menggunakan format standar Indonesia (koma untuk desimal)
             return new Intl.NumberFormat("id-ID", {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2
@@ -369,7 +368,6 @@
             
             monthInput.addEventListener('change', loadData);
             
-            // Event listener untuk filter grafik
             document.getElementById('btnFilterChart').addEventListener('click', (e) => {
                 e.stopPropagation();
                 toggleFilterDropdown();
@@ -493,9 +491,6 @@
             return days;
         }
 
-        /**
-         * FUNGSI LOAD DATA TEROPTIMASI
-         */
         async function loadData() {
             const selectedMonth = monthInput.value;
             toggleLoading(true);
@@ -727,16 +722,17 @@
             const ctx = document.getElementById('mainChart').getContext('2d');
             const labels = filledData.map(d => d.tanggal.slice(-2));
             
+            // Definisi palet warna baru sesuai permintaan
             const colors = {
-                'UREA': '#facc15',
-                'NPK': '#3b82f6',
-                'Urea Subsidi': '#eab308',
-                'Urea Non Subsidi': '#fbbf24',
-                'Urea Curah': '#fef08a',
-                'NPK Subsidi': '#2563eb',
-                'NPK Sawit': '#60a5fa',
-                'NPK Singkong': '#93c5fd',
-                'NPK Kopi': '#bfdbfe'
+                'UREA': '#facc15', // Total Urea (Kuning)
+                'NPK': '#3b82f6',  // Total NPK (Biru)
+                'Urea Subsidi': '#f472b6',      // Pink
+                'Urea Non Subsidi': '#fbbf24',  // Kuning
+                'Urea Curah': '#f8fafc',        // Putih
+                'NPK Subsidi': '#3b82f6',       // Biru (Tetap)
+                'NPK Sawit': '#38bdf8',         // Biru Langit (Sky Blue - Berbeda dengan Subsidi)
+                'NPK Singkong': '#f87171',      // Merah
+                'NPK Kopi': '#4ade80'           // Hijau
             };
 
             const selectedFilters = Array.from(document.querySelectorAll('.chart-filter-checkbox:checked')).map(cb => cb.value);
