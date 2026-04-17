@@ -61,7 +61,7 @@
             <!-- Navigation & Controls -->
             <div class="flex items-center gap-2 sm:gap-4">
                 
-                <!-- Filter Bulan (Hanya di Dashboard) -->
+                <!-- Filter Bulan -->
                 <div id="filter-container" class="flex items-center bg-[#1e1e20] border border-gray-700 rounded-xl px-2 sm:px-4 py-1.5 shadow-sm hover:border-gray-500 transition-colors">
                     <input
                         type="month"
@@ -71,12 +71,12 @@
                     />
                 </div>
 
-                <!-- Tombol Logout (Hanya muncul jika sudah login) -->
+                <!-- Tombol Logout -->
                 <button id="btn-logout" onclick="prosesLogout()" class="hidden items-center gap-2 px-3 py-1.5 bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 rounded-xl text-xs sm:text-sm font-medium transition-colors">
                     <i data-lucide="log-out" class="w-4 h-4"></i> <span class="hidden sm:inline">Logout</span>
                 </button>
 
-                <!-- Tombol Panel Admin / Home (Icon Only) -->
+                <!-- Tombol Navigasi -->
                 <button onclick="switchView('admin')" id="tab-admin" class="text-gray-400 hover:text-white transition-colors p-1" title="Panel Admin">
                     <i data-lucide="user" class="w-6 h-6"></i>
                 </button>
@@ -90,9 +90,7 @@
     <!-- MAIN CONTENT -->
     <main class="max-w-7xl mx-auto px-6 mt-8">
         
-        <!-- ============================================== -->
         <!-- VIEW 1: DASHBOARD -->
-        <!-- ============================================== -->
         <div id="view-dashboard" class="space-y-6">
             <div id="loadingIndicator" class="flex flex-col items-center justify-center h-64 opacity-60">
                 <i data-lucide="activity" class="w-10 h-10 text-blue-500 animate-pulse mb-4"></i>
@@ -100,22 +98,19 @@
             </div>
             
             <div id="dashboardContent" class="hidden space-y-6">
-                <!-- Data chart dan KPI -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div id="kpi-urea"></div>
                     <div id="kpi-npk"></div>
                 </div>
 
-                <!-- Area Chart dan Donut -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <!-- TREN STOK HARIAN (Span 2) -->
+                    <!-- TREN STOK HARIAN -->
                     <div class="lg:col-span-2 bg-[#1e1e20] rounded-[24px] p-6 border border-gray-800 shadow-xl">
                         <div class="flex items-center justify-between mb-6">
                             <div class="flex items-center gap-2">
                                 <i data-lucide="line-chart" class="w-5 h-5 text-blue-400"></i>
                                 <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wide">Tren Stok Harian</h3>
                             </div>
-                            <!-- Label Bulan Berdasarkan Filter -->
                             <span id="chartMonth" class="text-xs text-gray-500 font-medium bg-[#131314] px-2 py-1 rounded-md border border-gray-800 uppercase tracking-wider"></span>
                         </div>
                         <div class="h-[320px] w-full relative">
@@ -123,7 +118,7 @@
                         </div>
                     </div>
                     
-                    <!-- KOMPOSISI STOK (Span 1) -->
+                    <!-- KOMPOSISI STOK -->
                     <div class="lg:col-span-1 bg-[#1e1e20] rounded-[24px] p-6 border border-gray-800 shadow-xl flex flex-col">
                         <div class="flex items-center justify-between mb-6">
                             <div class="flex items-center gap-2">
@@ -133,7 +128,6 @@
                         </div>
                         <div class="flex-grow flex items-center justify-center relative min-h-[250px]">
                             <canvas id="donutChart"></canvas>
-                            <!-- Teks di tengah Donut -->
                             <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-[-20px]">
                                 <span class="text-xs text-gray-400 font-medium tracking-wider uppercase mb-1">Total Stok</span>
                                 <span id="donutTotal" class="text-2xl font-bold text-white leading-none">0</span>
@@ -150,9 +144,7 @@
             </div>
         </div>
 
-        <!-- ============================================== -->
         <!-- VIEW 2: LOGIN ADMIN -->
-        <!-- ============================================== -->
         <div id="view-login" class="hidden flex justify-center pb-12 pt-8">
             <div class="w-full max-w-sm">
                 <div class="text-center mb-8">
@@ -163,7 +155,6 @@
                 <div class="bg-[#1e1e20] rounded-[24px] p-8 border border-gray-800 shadow-xl relative overflow-hidden">
                     <div class="absolute -top-20 -right-20 w-40 h-40 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
                     <div class="space-y-5 relative z-10">
-                        <!-- Input Username -->
                         <div>
                             <label class="block text-sm font-medium text-gray-400 mb-2">Username</label>
                             <div class="relative">
@@ -173,7 +164,6 @@
                                     autocomplete="off">
                             </div>
                         </div>
-                        <!-- Input Password -->
                         <div>
                             <label class="block text-sm font-medium text-gray-400 mb-2">Password</label>
                             <div class="relative">
@@ -183,9 +173,7 @@
                                     onkeypress="if(event.key === 'Enter') prosesLogin()">
                             </div>
                         </div>
-
                         <div id="login-message" class="hidden rounded-xl p-3 text-sm font-medium border bg-red-500/10 text-red-400 border-red-500/20 text-center"></div>
-
                         <button onclick="prosesLogin()" id="btn-login"
                             class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3.5 rounded-xl transition-colors shadow-lg shadow-blue-600/20 mt-2 flex justify-center items-center gap-2">
                             <span>Masuk</span>
@@ -195,9 +183,7 @@
             </div>
         </div>
 
-        <!-- ============================================== -->
         <!-- VIEW 3: ADMIN PANEL (Input Stok) -->
-        <!-- ============================================== -->
         <div id="view-admin" class="hidden flex justify-center pb-12 pt-4">
             <div class="w-full max-w-xl">
                 <div class="bg-[#1e1e20] rounded-[24px] p-8 border border-gray-800 shadow-xl relative overflow-hidden">
@@ -240,7 +226,6 @@
                             <h3 class="text-xs font-semibold text-blue-500 uppercase tracking-wider mb-4 flex items-center gap-2">
                                 <i data-lucide="flask-conical" class="w-4 h-4"></i> Stok NPK (Ton)
                             </h3>
-                            <!-- Responsive: 1 kolom di mobile, 4 kolom di desktop -->
                             <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
                                 <div>
                                     <label class="block text-xs text-gray-400 mb-1.5">Subsidi</label>
@@ -251,12 +236,12 @@
                                     <input type="number" step="any" id="stok-npk-sawit" placeholder="0" class="w-full bg-[#1e1e20] border border-gray-700 text-gray-200 rounded-lg px-3 py-2 outline-none focus:border-blue-500 focus:ring-1 transition-all text-sm">
                                 </div>
                                 <div>
-                                    <label class="block text-xs text-gray-400 mb-1.5">Kopi</label>
-                                    <input type="number" step="any" id="stok-npk-kopi" placeholder="0" class="w-full bg-[#1e1e20] border border-gray-700 text-gray-200 rounded-lg px-3 py-2 outline-none focus:border-blue-500 focus:ring-1 transition-all text-sm">
-                                </div>
-                                <div>
                                     <label class="block text-xs text-gray-400 mb-1.5">Singkong</label>
                                     <input type="number" step="any" id="stok-npk-singkong" placeholder="0" class="w-full bg-[#1e1e20] border border-gray-700 text-gray-200 rounded-lg px-3 py-2 outline-none focus:border-blue-500 focus:ring-1 transition-all text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-gray-400 mb-1.5">Kopi</label>
+                                    <input type="number" step="any" id="stok-npk-kopi" placeholder="0" class="w-full bg-[#1e1e20] border border-gray-700 text-gray-200 rounded-lg px-3 py-2 outline-none focus:border-blue-500 focus:ring-1 transition-all text-sm">
                                 </div>
                             </div>
                         </div>
@@ -273,7 +258,6 @@
 
     </main>
 
-    <!-- FOOTER -->
     <footer class="max-w-7xl mx-auto px-6 mt-12 mb-4 pt-6 border-t border-gray-800/60 text-center">
         <p class="text-sm font-medium text-gray-400">Admin Pemasaran &amp; Penjualan</p>
         <p class="text-xs text-gray-500 mt-1">Design by 00.0034</p>
@@ -294,7 +278,7 @@
         // UTILITIES GLOBAL
         // =====================
         const formatNumber = (n) => {
-            // Menggunakan format standar Indonesia (titik ribuan, koma desimal)
+            // Menggunakan locale id-ID yang secara default menggunakan koma (,) sebagai pemisah desimal
             return new Intl.NumberFormat("id-ID", {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2
@@ -311,7 +295,6 @@
             if (!monthString) return "";
             const [year, month] = monthString.split("-");
             const date = new Date(year, month - 1);
-            // Ambil nama bulan pendek (3 karakter) dan pastikan uppercase
             const m = date.toLocaleDateString("id-ID", { month: "short" }).toUpperCase().substring(0, 3);
             return `${m} ${year}`;
         };
@@ -320,54 +303,39 @@
         let donutChartInstance = null;
         const monthInput = document.getElementById('monthFilter');
         
-        // =====================
-        // INISIALISASI
-        // =====================
         document.addEventListener('DOMContentLoaded', async () => {
             lucide.createIcons();
-            
             monthInput.value = new Date().toISOString().slice(0, 7);
             document.getElementById('tanggal').value = new Date().toISOString().split('T')[0];
-
             const { data: { session } } = await supabaseClient.auth.getSession();
             isLoggedIn = !!session;
-
             switchView('dashboard');
             monthInput.addEventListener('change', loadData);
-
             supabaseClient.auth.onAuthStateChange((event, session) => {
                 isLoggedIn = !!session;
             });
         });
 
-        // =====================
-        // SISTEM LOGIN
-        // =====================
         async function prosesLogin() {
             const usernameInput = document.getElementById('login-username').value.trim();
             const pass = document.getElementById('login-password').value;
             const msg = document.getElementById('login-message');
             const btn = document.getElementById('btn-login');
-
             if(!usernameInput || !pass) {
                 msg.textContent = "Username dan password wajib diisi!";
                 msg.classList.remove('hidden');
                 return;
             }
-
             const dummyEmail = usernameInput.toLowerCase() + DUMMY_DOMAIN;
             btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> <span>Memeriksa...</span>`;
             btn.disabled = true;
             lucide.createIcons();
-
             const { data, error } = await supabaseClient.auth.signInWithPassword({
                 email: dummyEmail,
                 password: pass,
             });
-
             btn.innerHTML = `<span>Masuk</span>`;
             btn.disabled = false;
-
             if (error) {
                 msg.textContent = "Username atau Password salah!";
                 msg.classList.remove('hidden');
@@ -384,17 +352,12 @@
             switchView('dashboard');
         }
 
-        // =====================
-        // NAVIGASI VIEW
-        // =====================
         function switchView(viewName) {
             const tabDash = document.getElementById('tab-dashboard');
             const tabAdmin = document.getElementById('tab-admin');
-            
             const viewDash = document.getElementById('view-dashboard');
             const viewLogin = document.getElementById('view-login');
             const viewAdmin = document.getElementById('view-admin');
-            
             const filterContainer = document.getElementById('filter-container');
             const btnLogout = document.getElementById('btn-logout');
 
@@ -426,9 +389,6 @@
             }
         }
 
-        // =====================
-        // FUNGSI DASHBOARD & CHART
-        // =====================
         function generateDays(month) {
             const [y, m] = month.split("-").map(Number);
             const d = new Date(y, m - 1, 1);
@@ -446,19 +406,13 @@
         async function loadData() {
             const selectedMonth = monthInput.value;
             toggleLoading(true);
-
-            // Update Label Bulan di Grafik (3 Karakter Kapital)
             document.getElementById('chartMonth').innerText = formatMonthOnly(selectedMonth);
-
             try {
                 const response = await fetch(`${SUPABASE_URL}/rest/v1/v_stok_harian?select=*`, {
                     headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
                 });
-
                 if (!response.ok) throw new Error("Gagal mengambil data");
                 const rawData = await response.json();
-                
-                // Ambil data untuk bulan terpilih dan urutkan
                 const raw = (rawData || []).filter((r) => r.tanggal?.startsWith(selectedMonth));
                 const grouped = {};
                 raw.forEach((r) => {
@@ -472,92 +426,72 @@
                     grouped[r.tanggal][r.kategori] += r.stok;
                     grouped[r.tanggal][r.nama_produk] += r.stok;
                 });
-
                 const days = generateDays(selectedMonth);
-                
-                // Cari tanggal terakhir yang benar-benar ada input datanya di sistem
                 const entryDates = Object.keys(grouped).sort();
                 const latestEntryDate = entryDates.length > 0 ? entryDates[entryDates.length - 1] : null;
-
                 let lastKnownData = {
-                    UREA: 0, NPK: 0,
-                    "Urea Subsidi": 0, "Urea Non Subsidi": 0, "Urea Curah": 0,
+                    UREA: 0, NPK: 0, "Urea Subsidi": 0, "Urea Non Subsidi": 0, "Urea Curah": 0,
                     "NPK Subsidi": 0, "NPK Sawit": 0, "NPK Kopi": 0, "NPK Singkong": 0,
                 };
-
                 const filled = days.map(d => {
                     if (grouped[d]) {
-                        // Jika ada data di database, gunakan dan update data terakhir diketahui
                         lastKnownData = { ...grouped[d] };
                         return grouped[d];
                     } else {
-                        // Jika tidak ada data:
-                        // Cek apakah tanggal ini berada di masa lalu/sekarang (sebelum input terakhir)
                         if (latestEntryDate && d <= latestEntryDate) {
-                            // Forward Fill: ambil data dari hari sebelumnya
                             return { ...lastKnownData, tanggal: d };
                         } else {
-                            // Masa Depan: Jangan disamakan, biarkan nol
                             return {
-                                tanggal: d, UREA: 0, NPK: 0,
-                                "Urea Subsidi": 0, "Urea Non Subsidi": 0, "Urea Curah": 0,
+                                tanggal: d, UREA: 0, NPK: 0, "Urea Subsidi": 0, "Urea Non Subsidi": 0, "Urea Curah": 0,
                                 "NPK Subsidi": 0, "NPK Sawit": 0, "NPK Kopi": 0, "NPK Singkong": 0,
                             };
                         }
                     }
                 });
-
                 processKPIs(filled, latestEntryDate);
                 processRankings(filled, latestEntryDate);
                 renderChart(filled);
                 renderDonutChart(filled, latestEntryDate);
                 toggleLoading(false);
-            } catch (err) {
-                console.error(err);
-                toggleLoading(false);
-            }
+            } catch (err) { console.error(err); toggleLoading(false); }
         }
 
         function toggleLoading(isLoading) {
             const loader = document.getElementById('loadingIndicator');
             const content = document.getElementById('dashboardContent');
-            if (isLoading) {
-                loader.classList.remove('hidden');
-                content.classList.add('hidden');
-            } else {
-                loader.classList.add('hidden');
-                content.classList.remove('hidden');
-            }
+            if (isLoading) { loader.classList.remove('hidden'); content.classList.add('hidden'); }
+            else { loader.classList.add('hidden'); content.classList.remove('hidden'); }
         }
 
         function processKPIs(filledData, latestDate) {
-            // Jika tidak ada data sama sekali di bulan ini
             if (!latestDate) {
                 const empty = { UREA: 0, NPK: 0, breakdown: [] };
                 document.getElementById('kpi-urea').innerHTML = renderKpiCard({ ...empty, title: 'UREA', lastUpdated: '', diffPercent: 0 }, true);
                 document.getElementById('kpi-npk').innerHTML = renderKpiCard({ ...empty, title: 'NPK', lastUpdated: '', diffPercent: 0 }, false);
                 return;
             }
-
-            // Ambil data pada tanggal input terakhir
             const todayData = filledData.find(d => d.tanggal === latestDate);
             const idx = filledData.findIndex(d => d.tanggal === latestDate);
             const yesterdayData = idx > 0 ? filledData[idx - 1] : todayData;
-
+            
             const calcPercent = (today, yesterday) => {
                 if (yesterday === 0) return today > 0 ? 100 : 0;
-                return Math.round(((today - yesterday) / yesterday) * 100);
+                return ((today - yesterday) / yesterday) * 100;
             };
-
+            
             const kpiUrea = {
                 title: "UREA", value: todayData.UREA, diffPercent: calcPercent(todayData.UREA, yesterdayData.UREA), lastUpdated: todayData.tanggal,
                 breakdown: [ { n: "Subsidi", v: todayData["Urea Subsidi"] }, { n: "Non Subsidi", v: todayData["Urea Non Subsidi"] }, { n: "Curah", v: todayData["Urea Curah"] }]
             };
             const kpiNpk = {
                 title: "NPK", value: todayData.NPK, diffPercent: calcPercent(todayData.NPK, yesterdayData.NPK), lastUpdated: todayData.tanggal,
-                breakdown: [ { n: "Subsidi", v: todayData["NPK Subsidi"] }, { n: "Sawit", v: todayData["NPK Sawit"] }, { n: "Kopi", v: todayData["NPK Kopi"] }, { n: "Singkong", v: todayData["NPK Singkong"] }]
+                breakdown: [ 
+                    { n: "Subsidi", v: todayData["NPK Subsidi"] }, 
+                    { n: "Sawit", v: todayData["NPK Sawit"] }, 
+                    { n: "Singkong", v: todayData["NPK Singkong"] },
+                    { n: "Kopi", v: todayData["NPK Kopi"] }
+                ]
             };
-
             document.getElementById('kpi-urea').innerHTML = renderKpiCard(kpiUrea, true);
             document.getElementById('kpi-npk').innerHTML = renderKpiCard(kpiNpk, false);
             lucide.createIcons();
@@ -571,75 +505,66 @@
             const isPositive = diffValue >= 0;
             const diffIcon = isPositive ? 'trending-up' : 'trending-down';
             const diffClass = isPositive ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400';
-            const displayPercent = diffValue === 0 ? "-" : Math.abs(diffValue) + "%";
+            
+            const displayPercent = new Intl.NumberFormat("id-ID", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(Math.abs(diffValue)) + "%";
 
             let breakdownHtml = (data.breakdown || []).map(b => `
-                <div class="flex justify-between items-center group/item">
-                    <span class="text-sm text-gray-400 flex items-center gap-2">
-                        <span class="w-1.5 h-1.5 rounded-full ${isUrea ? 'bg-yellow-400' : 'bg-blue-400'} opacity-40 group-hover/item:opacity-100 transition-opacity"></span>
-                        ${b.n}
+                <div class="flex justify-between items-center group/item py-0.5">
+                    <span class="text-xs sm:text-sm text-gray-400 flex items-center gap-2">
+                        <span class="w-1.5 h-1.5 rounded-full ${isUrea ? 'bg-yellow-400' : 'bg-blue-400'} opacity-40 group-hover/item:opacity-100 transition-opacity shrink-0"></span>
+                        <span class="truncate font-medium">${b.n}</span>
                     </span>
-                    <span class="text-sm font-semibold text-gray-200">${formatNumber(b.v)} <span class="text-xs text-gray-500 font-normal">Ton</span></span>
+                    <span class="text-xs sm:text-sm font-semibold text-gray-200 shrink-0">${formatNumber(b.v)} <span class="text-[10px] sm:text-xs text-gray-500 font-normal">Ton</span></span>
                 </div>
             `).join('');
 
             return `
-                <div class="bg-[#1e1e20] rounded-[24px] p-6 border border-gray-800 hover:border-gray-700 transition-colors group relative overflow-hidden h-full shadow-lg">
+                <div class="bg-[#1e1e20] rounded-[24px] p-5 sm:p-6 border border-gray-800 hover:border-gray-700 transition-colors group relative overflow-hidden h-full shadow-lg">
                     <div class="absolute -right-8 -top-8 w-32 h-32 rounded-full ${bgColor} blur-2xl opacity-20 group-hover:opacity-40 transition-opacity"></div>
                     <i data-lucide="${kpiIcon}" class="absolute -bottom-4 -right-4 w-32 h-32 ${accentColor} opacity-5 group-hover:opacity-10 transition-all duration-500 transform group-hover:scale-110 pointer-events-none"></i>
                     <div class="relative z-10">
                         <div class="flex justify-between items-start mb-4">
                             <div class="flex items-center gap-2">
-                                <div class="${accentColor}"><i data-lucide="${kpiIcon}" class="w-6 h-6"></i></div>
-                                <h2 class="text-sm font-semibold text-gray-400 tracking-wide uppercase">TOTAL STOK ${data.title}</h2>
+                                <div class="${accentColor}"><i data-lucide="${kpiIcon}" class="w-5 h-5 sm:w-6 sm:h-6"></i></div>
+                                <h2 class="text-[10px] sm:text-sm font-semibold text-gray-400 tracking-wide uppercase">TOTAL STOK ${data.title}</h2>
                             </div>
-                            <span class="text-xs text-gray-500 font-medium bg-[#131314] px-2 py-1 rounded-md border border-gray-800">${formatDate(data.lastUpdated)}</span>
+                            <span class="text-[10px] sm:text-xs text-gray-500 font-medium bg-[#131314] px-2 py-0.5 sm:py-1 rounded-md border border-gray-800">${formatDate(data.lastUpdated)}</span>
                         </div>
                         
-                        <!-- Penyesuaian Responsif Angka KPI -->
-                        <div class="flex flex-wrap items-end gap-2 sm:gap-4 mb-6">
-                            <div class="flex items-baseline gap-1">
-                                <div class="text-3xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight leading-none">${formatNumber(data.value)}</div>
-                                <div class="text-sm sm:text-lg font-medium text-gray-500">Ton</div>
+                        <div class="flex flex-nowrap items-end justify-between gap-2 sm:gap-4 mb-6">
+                            <div class="flex items-baseline gap-1 shrink-0 overflow-hidden">
+                                <div class="text-3xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white tracking-tight leading-none">${formatNumber(data.value)}</div>
+                                <div class="text-[10px] sm:text-xs md:text-lg font-medium text-gray-500">Ton</div>
                             </div>
-                            <div class="flex items-center gap-1 text-[10px] sm:text-sm font-medium px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full mb-0.5 ${diffClass} whitespace-nowrap">
+                            <div class="flex items-center gap-1 text-[9px] sm:text-xs md:text-sm font-medium px-1.5 py-0.5 sm:px-2.5 sm:py-1 rounded-full mb-0.5 ${diffClass} whitespace-nowrap shrink-0 border border-current border-opacity-10">
                                 <i data-lucide="${diffIcon}" class="w-3 h-3 sm:w-4 h-4"></i> ${displayPercent}
                             </div>
                         </div>
-                        
-                        <div class="space-y-3 pt-4 border-t border-gray-800">${breakdownHtml}</div>
+                        <div class="space-y-1.5 pt-4 border-t border-gray-800">${breakdownHtml}</div>
                     </div>
                 </div>
             `;
         }
 
         function processRankings(filledData, latestDate) {
-            const totals = {
-                "Urea Subsidi": 0, "Urea Non Subsidi": 0, "Urea Curah": 0,
-                "NPK Subsidi": 0, "NPK Sawit": 0, "NPK Kopi": 0, "NPK Singkong": 0,
-            };
-            
-            // Hanya hitung rata-rata sampai tanggal input terakhir agar angka akurat
+            const totals = { "Urea Subsidi": 0, "Urea Non Subsidi": 0, "Urea Curah": 0, "NPK Subsidi": 0, "NPK Sawit": 0, "NPK Kopi": 0, "NPK Singkong": 0 };
             const activeData = latestDate ? filledData.filter(d => d.tanggal <= latestDate) : [];
             const dayCount = activeData.length || 1;
-
-            activeData.forEach((d) => { 
-                Object.keys(totals).forEach((k) => totals[k] += d[k] || 0); 
-            });
-
+            activeData.forEach((d) => { Object.keys(totals).forEach((k) => totals[k] += d[k] || 0); });
             const rankUrea = [
                 { name: "Subsidi", value: totals["Urea Subsidi"] / dayCount }, 
                 { name: "Non Subsidi", value: totals["Urea Non Subsidi"] / dayCount }, 
                 { name: "Curah", value: totals["Urea Curah"] / dayCount },
             ].sort((a, b) => b.value - a.value);
-
             const rankNpk = [
                 { name: "Subsidi", value: totals["NPK Subsidi"] / dayCount }, 
                 { name: "Sawit", value: totals["NPK Sawit"] / dayCount }, 
-                { name: "Kopi", value: totals["NPK Kopi"] / dayCount }, 
                 { name: "Singkong", value: totals["NPK Singkong"] / dayCount },
+                { name: "Kopi", value: totals["NPK Kopi"] / dayCount }
             ].sort((a, b) => b.value - a.value);
-
             document.getElementById('rank-urea').innerHTML = renderRankingCard("UREA", rankUrea, "#facc15");
             document.getElementById('rank-npk').innerHTML = renderRankingCard("NPK", rankNpk, "#3b82f6");
             lucide.createIcons();
@@ -647,8 +572,7 @@
 
         function renderRankingCard(title, data, color) {
             if (!data || data.length === 0) return '';
-            const topItem = data[0];
-            const maxValue = data[0].value || 1;
+            const topItem = data[0]; const maxValue = data[0].value || 1;
             let barsHtml = data.map((item, index) => {
                 const percentage = (item.value / maxValue) * 100;
                 const barColor = index === 0 ? color : color + '40';
@@ -664,7 +588,6 @@
                     </div>
                 `;
             }).join('');
-
             const chartColor = title === 'UREA' ? 'text-yellow-400' : 'text-blue-400';
             return `
                 <div class="bg-[#1e1e20] rounded-[24px] p-6 border border-gray-800 shadow-lg">
@@ -678,9 +601,7 @@
                             <div class="bg-[#1e1e20] border border-gray-700 p-2 rounded-lg shadow-sm">
                                 <i data-lucide="award" class="w-6 h-6 text-yellow-500"></i>
                             </div>
-                            <div>
-                                <div class="text-sm font-semibold text-gray-200">${topItem.name}</div>
-                            </div>
+                            <div><div class="text-sm font-semibold text-gray-200">${topItem.name}</div></div>
                         </div>
                         <div class="text-right">
                             <div class="flex items-baseline gap-1 justify-end">
@@ -698,28 +619,98 @@
             const labels = filledData.map(d => d.tanggal.slice(-2));
             const ureaData = filledData.map(d => d.UREA);
             const npkData = filledData.map(d => d.NPK);
+            
+            const ureaColor = '#facc15';
+            const npkColor = '#3b82f6';
+
             let gradientUrea = ctx.createLinearGradient(0, 0, 0, 320);
-            gradientUrea.addColorStop(0, 'rgba(250, 204, 21, 0.4)'); gradientUrea.addColorStop(1, 'rgba(250, 204, 21, 0.0)');
+            gradientUrea.addColorStop(0, 'rgba(250, 204, 21, 0.4)'); 
+            gradientUrea.addColorStop(1, 'rgba(250, 204, 21, 0.0)');
+            
             let gradientNpk = ctx.createLinearGradient(0, 0, 0, 320);
-            gradientNpk.addColorStop(0, 'rgba(59, 130, 246, 0.4)'); gradientNpk.addColorStop(1, 'rgba(59, 130, 246, 0.0)');
+            gradientNpk.addColorStop(0, 'rgba(59, 130, 246, 0.4)'); 
+            gradientNpk.addColorStop(1, 'rgba(59, 130, 246, 0.0)');
+
             if (chartInstance) chartInstance.destroy();
             chartInstance = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: labels,
                     datasets: [
-                        { label: 'UREA', data: ureaData, borderColor: '#facc15', backgroundColor: gradientUrea, borderWidth: 3, fill: true, tension: 0.4, pointRadius: 0, pointHoverRadius: 6, pointBackgroundColor: '#1e1e20', pointBorderColor: '#facc15', pointBorderWidth: 2, },
-                        { label: 'NPK', data: npkData, borderColor: '#3b82f6', backgroundColor: gradientNpk, borderWidth: 3, fill: true, tension: 0.4, pointRadius: 0, pointHoverRadius: 6, pointBackgroundColor: '#1e1e20', pointBorderColor: '#3b82f6', pointBorderWidth: 2, }
+                        { 
+                            label: 'UREA', 
+                            data: ureaData, 
+                            borderColor: ureaColor, 
+                            backgroundColor: gradientUrea, 
+                            borderWidth: 3, 
+                            fill: true, 
+                            tension: 0.4, 
+                            pointRadius: 0, 
+                            pointHoverRadius: 6, 
+                            pointBackgroundColor: '#1e1e20', 
+                            pointBorderColor: ureaColor, 
+                            pointBorderWidth: 2,
+                            pointStyle: 'rect' 
+                        },
+                        { 
+                            label: 'NPK', 
+                            data: npkData, 
+                            borderColor: npkColor, 
+                            backgroundColor: gradientNpk, 
+                            borderWidth: 3, 
+                            fill: true, 
+                            tension: 0.4, 
+                            pointRadius: 0, 
+                            pointHoverRadius: 6, 
+                            pointBackgroundColor: '#1e1e20', 
+                            pointBorderColor: npkColor, 
+                            pointBorderWidth: 2,
+                            pointStyle: 'rect'
+                        }
                     ]
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
                     plugins: {
-                        legend: { display: false },
+                        legend: { 
+                            display: true,
+                            position: 'bottom',
+                            labels: { 
+                                color: '#9ca3af', 
+                                font: { family: 'Inter', size: 12, weight: '500' }, 
+                                padding: 20, 
+                                usePointStyle: true, 
+                                pointStyle: 'rect',
+                                boxWidth: 10,
+                                boxHeight: 10,
+                                generateLabels: (chart) => {
+                                    const labels = Chart.defaults.plugins.legend.labels.generateLabels(chart);
+                                    labels.forEach(label => {
+                                        label.fillStyle = label.strokeStyle;
+                                        label.lineWidth = 0; 
+                                    });
+                                    return labels;
+                                }
+                            }
+                        },
                         tooltip: {
-                            backgroundColor: '#1e1e20', titleColor: '#9ca3af', bodyColor: '#f3f4f6', borderColor: '#374151', borderWidth: 1, padding: 12, boxPadding: 6, usePointStyle: true,
+                            backgroundColor: '#1e1e20', titleColor: '#9ca3af', bodyColor: '#f3f4f6', borderColor: '#374151', borderWidth: 1, padding: 12, boxPadding: 6, 
+                            usePointStyle: true, 
                             titleFont: { family: 'Inter', size: 12, weight: '600' }, bodyFont: { family: 'Inter', size: 14, weight: 'bold' },
-                            callbacks: { title: function(context) { return formatDate(filledData[context[0].dataIndex].tanggal); }, label: function(context) { return context.dataset.label + ': ' + formatNumber(context.raw) + ' Ton'; } }
+                            callbacks: { 
+                                title: function(context) { return formatDate(filledData[context[0].dataIndex].tanggal); }, 
+                                label: function(context) { 
+                                    return ` ${context.dataset.label}: ${formatNumber(context.raw)} Ton`; 
+                                },
+                                labelColor: function(context) {
+                                    return {
+                                        borderColor: context.dataset.borderColor,
+                                        backgroundColor: context.dataset.borderColor,
+                                        borderWidth: 0,
+                                        borderRadius: 0
+                                    };
+                                }
+                            }
                         }
                     },
                     scales: {
@@ -732,44 +723,55 @@
 
         function renderDonutChart(filledData, latestDate) {
             const ctx = document.getElementById('donutChart').getContext('2d');
-            
-            // Ambil data terbaru berdasarkan input terakhir sistem, bukan akhir bulan
             const latestData = latestDate ? filledData.find(d => d.tanggal === latestDate) : { UREA: 0, NPK: 0 };
-            const urea = latestData.UREA;
-            const npk = latestData.NPK;
-            const total = urea + npk;
-
-            // Update Tanggal di kartu Komposisi
+            const urea = latestData.UREA; const npk = latestData.NPK; const total = urea + npk;
             document.getElementById('donutDate').innerText = latestDate ? formatDate(latestDate) : '';
             document.getElementById('donutTotal').innerText = formatNumber(total);
-
             if (donutChartInstance) donutChartInstance.destroy();
             donutChartInstance = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
                     labels: ['UREA', 'NPK'],
-                    datasets: [{
-                        data: [urea, npk],
-                        backgroundColor: ['#facc15', '#3b82f6'],
-                        borderWidth: 0,
-                        hoverOffset: 5
+                    datasets: [{ 
+                        data: [urea, npk], 
+                        backgroundColor: ['#facc15', '#3b82f6'], 
+                        borderWidth: 0, 
+                        hoverOffset: 5,
+                        pointStyle: 'rect' 
                     }]
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false, cutout: '75%',
                     plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: { color: '#9ca3af', font: { family: 'Inter', size: 12, weight: '500' }, padding: 20, usePointStyle: true, pointStyle: 'circle' }
+                        legend: { 
+                            position: 'bottom', 
+                            labels: { 
+                                color: '#9ca3af', 
+                                font: { family: 'Inter', size: 12, weight: '500' }, 
+                                padding: 20, 
+                                usePointStyle: true, 
+                                pointStyle: 'rect',
+                                boxWidth: 10,
+                                boxHeight: 10
+                            } 
                         },
                         tooltip: {
-                            backgroundColor: '#1e1e20', titleColor: '#9ca3af', bodyColor: '#f3f4f6', borderColor: '#374151', borderWidth: 1, padding: 12, boxPadding: 6, usePointStyle: true,
-                            callbacks: {
-                                label: function(context) {
-                                    let value = context.raw;
-                                    let percentage = total > 0 ? (value / total) * 100 : 0;
-                                    let percentageFormatted = new Intl.NumberFormat("id-ID", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(percentage);
-                                    return ` ${context.label}: ${formatNumber(value)} Ton (${percentageFormatted}%)`;
+                            backgroundColor: '#1e1e20', titleColor: '#9ca3af', bodyColor: '#f3f4f6', borderColor: '#374151', borderWidth: 1, padding: 12, boxPadding: 6, 
+                            usePointStyle: true, 
+                            titleFont: { family: 'Inter', size: 12, weight: '600' }, bodyFont: { family: 'Inter', size: 14, weight: 'bold' },
+                            callbacks: { 
+                                title: function(context) { return latestDate ? formatDate(latestDate) : ''; },
+                                label: function(context) { 
+                                    return ` ${context.label}: ${formatNumber(context.raw)} Ton`; 
+                                },
+                                labelColor: function(context) {
+                                    const bgColor = context.element.options.backgroundColor;
+                                    return {
+                                        borderColor: bgColor,
+                                        backgroundColor: bgColor,
+                                        borderWidth: 0,
+                                        borderRadius: 0 
+                                    };
                                 }
                             }
                         }
@@ -784,7 +786,7 @@
             if (!tanggal) { showAdminMessage("Tanggal wajib diisi!", "error"); return; }
             const inputProduk = [
                 { id: 'stok-urea-subsidi', nama: 'Urea Subsidi' }, { id: 'stok-urea-non-subsidi', nama: 'Urea Non Subsidi' }, { id: 'stok-urea-curah', nama: 'Urea Curah' },
-                { id: 'stok-npk-subsidi', nama: 'NPK Subsidi' }, { id: 'stok-npk-sawit', nama: 'NPK Sawit' }, { id: 'stok-npk-kopi', nama: 'NPK Kopi' }, { id: 'stok-npk-singkong', nama: 'NPK Singkong' }
+                { id: 'stok-npk-subsidi', nama: 'NPK Subsidi' }, { id: 'stok-npk-sawit', nama: 'NPK Sawit' }, { id: 'stok-npk-singkong', nama: 'NPK Singkong' }, { id: 'stok-npk-kopi', nama: 'NPK Kopi' }
             ];
             const dataToSave = inputProduk
                 .map(item => ({ nama: item.nama, stok: document.getElementById(item.id).value, elementId: item.id }))
@@ -792,8 +794,7 @@
             if (dataToSave.length === 0) { showAdminMessage("Minimal isi jumlah stok pada salah satu produk!", "error"); return; }
             btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Menyimpan...`;
             btn.disabled = true; btn.classList.add('opacity-70'); lucide.createIcons();
-            let successCount = 0;
-            let errorMsg = "";
+            let successCount = 0; let errorMsg = "";
             for (const item of dataToSave) {
                 const { error } = await supabaseClient.rpc('input_stok_harian', { p_tanggal: tanggal, p_nama_produk: item.nama, p_stok: parseFloat(item.stok) });
                 if (error) { errorMsg = error.message; break; } else { successCount++; }
