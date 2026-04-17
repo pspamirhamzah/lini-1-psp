@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LINI 1 PSP - Dashboard</title>
-
+    
     <!-- Thumbnail -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://lini-1.pages.dev/">
     <meta property="og:title" content="Lini I Dashboard">
-    <meta property="og:description" content="PT Pusri Palembang">
+    <meta property="og:description" content="Design by 00.0034">
     
     <meta property="og:image" content="https://lini-1.pages.dev/thumbnail.png">
     <meta property="og:image:type" content="image/jpeg">
@@ -110,12 +110,32 @@
                     <div id="kpi-npk"></div>
                 </div>
 
-                <div class="bg-[#1e1e20] rounded-[24px] p-6 border border-gray-800 shadow-xl">
-                    <div class="flex items-center gap-2 mb-6">
-                        <h3 class="text-lg font-semibold text-gray-100">TREN STOK HARIAN</h3>
+                <!-- Area Chart dan Donut -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- TREN STOK HARIAN (Span 2) -->
+                    <div class="lg:col-span-2 bg-[#1e1e20] rounded-[24px] p-6 border border-gray-800 shadow-xl">
+                        <div class="flex items-center gap-2 mb-6">
+                            <h3 class="text-lg font-semibold text-gray-100">TREN STOK HARIAN</h3>
+                        </div>
+                        <div class="h-[320px] w-full relative">
+                            <canvas id="mainChart"></canvas>
+                        </div>
                     </div>
-                    <div class="h-[320px] w-full relative">
-                        <canvas id="mainChart"></canvas>
+                    
+                    <!-- KOMPOSISI STOK (Span 1) -->
+                    <div class="lg:col-span-1 bg-[#1e1e20] rounded-[24px] p-6 border border-gray-800 shadow-xl flex flex-col">
+                        <div class="flex items-center gap-2 mb-6">
+                            <h3 class="text-lg font-semibold text-gray-100">KOMPOSISI HARI INI</h3>
+                        </div>
+                        <div class="flex-grow flex items-center justify-center relative min-h-[250px]">
+                            <canvas id="donutChart"></canvas>
+                            <!-- Teks di tengah Donut -->
+                            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-[-20px]">
+                                <span class="text-xs text-gray-400 font-medium tracking-wider uppercase mb-1">Total Stok</span>
+                                <span id="donutTotal" class="text-2xl font-bold text-white leading-none">0</span>
+                                <span class="text-xs text-gray-500 mt-1">Ton</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -285,6 +305,7 @@
         };
 
         let chartInstance = null;
+        let donutChartInstance = null;
         const monthInput = document.getElementById('monthFilter');
         
         // =====================
@@ -461,6 +482,7 @@
                 processKPIs(filled);
                 processRankings(filled);
                 renderChart(filled);
+                renderDonutChart(filled);
 
                 toggleLoading(false);
             } catch (err) {
@@ -521,13 +543,17 @@
                         <span class="w-1.5 h-1.5 rounded-full ${isUrea ? 'bg-yellow-400' : 'bg-blue-400'} opacity-40 group-hover/item:opacity-100 transition-opacity"></span>
                         ${b.n}
                     </span>
-                    <span class="text-sm font-semibold text-gray-200">${formatNumber(b.v)}</span>
+                    <span class="text-sm font-semibold text-gray-200">${formatNumber(b.v)} <span class="text-xs text-gray-500 font-normal">Ton</span></span>
                 </div>
             `).join('');
 
             return `
                 <div class="bg-[#1e1e20] rounded-[24px] p-6 border border-gray-800 hover:border-gray-700 transition-colors group relative overflow-hidden h-full shadow-lg">
                     <div class="absolute -right-8 -top-8 w-32 h-32 rounded-full ${bgColor} blur-2xl opacity-20 group-hover:opacity-40 transition-opacity"></div>
+                    
+                    <!-- Icon Besar / Watermark (Baru) -->
+                    <i data-lucide="${kpiIcon}" class="absolute -bottom-4 -right-4 w-32 h-32 ${accentColor} opacity-5 group-hover:opacity-10 transition-all duration-500 transform group-hover:scale-110 pointer-events-none"></i>
+
                     <div class="relative z-10">
                         <div class="flex justify-between items-start mb-4">
                             <div class="flex items-center gap-2">
@@ -537,7 +563,10 @@
                             <span class="text-xs text-gray-500 font-medium bg-[#131314] px-2 py-1 rounded-md border border-gray-800">${formatDate(data.lastUpdated)}</span>
                         </div>
                         <div class="flex items-end gap-4 mb-6">
-                            <div class="text-5xl font-bold text-white tracking-tight">${formatNumber(data.value)}</div>
+                            <div class="flex items-baseline gap-1.5">
+                                <div class="text-5xl font-bold text-white tracking-tight">${formatNumber(data.value)}</div>
+                                <div class="text-lg font-medium text-gray-500">Ton</div>
+                            </div>
                             <div class="flex items-center gap-1 text-sm font-medium px-2.5 py-1 rounded-full mb-1 ${diffClass}">
                                 <i data-lucide="${diffIcon}" class="w-4 h-4"></i> ${diffValue}
                             </div>
@@ -581,7 +610,7 @@
                     <div class="mb-3">
                         <div class="flex justify-between text-sm mb-1">
                             <span class="font-medium text-gray-300">${item.name}</span>
-                            <span class="font-semibold text-gray-100">${formatNumber(item.value)}</span>
+                            <span class="font-semibold text-gray-100">${formatNumber(item.value)} <span class="text-xs text-gray-500 font-normal">Ton</span></span>
                         </div>
                         <div class="h-5 bg-gray-800 rounded-r-lg w-full">
                             <div class="h-full rounded-r-lg transition-all duration-1000 ease-out" style="width: ${percentage}%; background-color: ${barColor}"></div>
@@ -610,7 +639,10 @@
                             </div>
                         </div>
                         <div class="text-right">
-                            <div class="text-lg font-semibold text-white">${formatNumber(topItem.value)}</div>
+                            <div class="flex items-baseline gap-1 justify-end">
+                                <div class="text-lg font-semibold text-white">${formatNumber(topItem.value)}</div>
+                                <div class="text-xs font-medium text-gray-500">Ton</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -647,12 +679,70 @@
                         tooltip: {
                             backgroundColor: '#1e1e20', titleColor: '#9ca3af', bodyColor: '#f3f4f6', borderColor: '#374151', borderWidth: 1, padding: 12, boxPadding: 6, usePointStyle: true,
                             titleFont: { family: 'Inter', size: 12, weight: '600' }, bodyFont: { family: 'Inter', size: 14, weight: 'bold' },
-                            callbacks: { title: function(context) { return formatDate(filledData[context[0].dataIndex].tanggal); }, label: function(context) { return context.dataset.label + ': ' + formatNumber(context.raw); } }
+                            callbacks: { title: function(context) { return formatDate(filledData[context[0].dataIndex].tanggal); }, label: function(context) { return context.dataset.label + ': ' + formatNumber(context.raw) + ' Ton'; } }
                         }
                     },
                     scales: {
                         x: { grid: { display: false }, ticks: { color: '#9ca3af', font: { family: 'Inter', size: 12 }, maxTicksLimit: 10, maxRotation: 0 }, border: { display: false } },
                         y: { grid: { color: '#27272a', drawBorder: false, borderDash: [4, 4] }, border: { display: false }, ticks: { display: false, maxTicksLimit: 5 } }
+                    }
+                }
+            });
+        }
+
+        function renderDonutChart(filledData) {
+            const ctx = document.getElementById('donutChart').getContext('2d');
+            
+            // Ambil data hari terakhir yang "memiliki nilai" (sudah diinput)
+            let validDataDays = filledData.filter((d) => d.UREA > 0 || d.NPK > 0);
+            let latestData = validDataDays.length > 0 ? validDataDays[validDataDays.length - 1] : { UREA: 0, NPK: 0 };
+            
+            const urea = latestData.UREA;
+            const npk = latestData.NPK;
+            const total = urea + npk;
+
+            // Update teks di tengah donat
+            document.getElementById('donutTotal').innerText = formatNumber(total);
+
+            if (donutChartInstance) donutChartInstance.destroy();
+
+            donutChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['UREA', 'NPK'],
+                    datasets: [{
+                        data: [urea, npk],
+                        backgroundColor: ['#facc15', '#3b82f6'], // kuning-urea, biru-npk
+                        borderWidth: 0,
+                        hoverOffset: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '75%', // Ketebalan donat
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#9ca3af',
+                                font: { family: 'Inter', size: 12, weight: '500' },
+                                padding: 20,
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: '#1e1e20', titleColor: '#9ca3af', bodyColor: '#f3f4f6', borderColor: '#374151', borderWidth: 1, padding: 12, boxPadding: 6, usePointStyle: true,
+                            callbacks: {
+                                label: function(context) {
+                                    let value = context.raw;
+                                    let percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                                    // Mengganti titik menjadi koma (,) khusus untuk desimal persentase
+                                    return ` ${context.label}: ${formatNumber(value)} Ton (${percentage.replace('.', ',')}%)`;
+                                }
+                            }
+                        }
                     }
                 }
             });
